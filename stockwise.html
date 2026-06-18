@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>StockWise — Invest at Any Budget</title>
+<style>
+  :root {
+    --green: #1a8a4a;
+    --green-light: #eaf3de;
+    --green-mid: #3b6d11;
+    --amber: #BA7517;
+    --amber-light: #faeeda;
+    --red: #c0392b;
+    --red-light: #fcebeb;
+    --blue: #185FA5;
+    --blue-light: #e6f1fb;
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.18);
+    --text: #1a1a18;
+    --text2: #555550;
+    --text3: #999990;
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111110;
+      --surface: #1c1c1a;
+      --border: rgba(255,255,255,0.1);
+      --border-strong: rgba(255,255,255,0.18);
+      --text: #e8e8e0;
+      --text2: #999990;
+      --text3: #555550;
+      --green-light: #1a3020;
+      --amber-light: #2e2010;
+      --red-light: #2e1010;
+      --blue-light: #0d1e33;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; line-height: 1.5; }
+
+  /* ── LOGO ── */
+  .logo-mark { width: 36px; height: 36px; background: var(--green); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .logo-mark svg { width: 20px; height: 20px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .logo-name { font-size: 18px; font-weight: 600; color: var(--text); }
+  .logo-name span { color: var(--green); }
+
+  /* ── LANDING PAGE ── */
+  .landing { min-height: 100vh; display: flex; flex-direction: column; }
+  .land-nav { display: flex; align-items: center; gap: 12px; padding: 1rem 2rem; border-bottom: 0.5px solid var(--border); background: var(--surface); }
+  .land-nav-actions { margin-left: auto; display: flex; gap: 10px; }
+  .btn-ghost { padding: 8px 18px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: transparent; color: var(--text); font-size: 14px; cursor: pointer; }
+  .btn-ghost:hover { background: var(--bg); }
+  .btn-green { padding: 8px 18px; border: none; border-radius: var(--radius); background: var(--green); color: #fff; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .btn-green:hover { opacity: 0.88; }
+
+  .hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 4rem 2rem; }
+  .hero-eyebrow { font-size: 13px; color: var(--green); font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 1rem; }
+  .hero h1 { font-size: 42px; font-weight: 700; line-height: 1.15; max-width: 600px; margin-bottom: 1.25rem; }
+  .hero h1 span { color: var(--green); }
+  .hero p { font-size: 17px; color: var(--text2); max-width: 500px; margin-bottom: 2.5rem; line-height: 1.6; }
+  .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .btn-hero-primary { padding: 14px 32px; background: var(--green); color: #fff; border: none; border-radius: var(--radius); font-size: 16px; font-weight: 500; cursor: pointer; }
+  .btn-hero-primary:hover { opacity: 0.88; }
+  .btn-hero-ghost { padding: 14px 32px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: transparent; color: var(--text); font-size: 16px; cursor: pointer; }
+  .btn-hero-ghost:hover { background: var(--surface); }
+  .hero-note { margin-top: 1.5rem; font-size: 13px; color: var(--text3); }
+
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; max-width: 900px; margin: 0 auto; padding: 0 2rem 4rem; width: 100%; }
+  .feat { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
+  .feat-icon { font-size: 24px; margin-bottom: 10px; }
+  .feat h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .feat p { font-size: 13px; color: var(--text2); line-height: 1.5; }
+
+  /* ── AUTH MODAL OVERLAY ── */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center; z-index: 100; padding: 1rem; }
+  .modal-overlay.open { display: flex; }
+  .modal-card { background: var(--surface); border-radius: var(--radius-lg); padding: 2rem; width: 100%; max-width: 400px; position: relative; border: 0.5px solid var(--border-strong); }
+  .modal-close { position: absolute; top: 14px; right: 14px; background: transparent; border: none; font-size: 20px; cursor: pointer; color: var(--text3); line-height: 1; }
+  .modal-close:hover { color: var(--text); }
+  .modal-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; }
+  .modal-title { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .modal-sub { font-size: 13px; color: var(--text2); margin-bottom: 1.25rem; }
+  .modal-tabs { display: flex; border-bottom: 0.5px solid var(--border); margin-bottom: 1.25rem; }
+  .mtab { flex: 1; padding: 8px; text-align: center; font-size: 14px; cursor: pointer; color: var(--text2); border-bottom: 2px solid transparent; }
+  .mtab.on { color: var(--green); border-bottom-color: var(--green); font-weight: 500; }
+  .mpage { display: none; }
+  .mpage.on { display: block; }
+
+  /* ── SHARED FORM STYLES ── */
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 5px; }
+  .field input { width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 15px; outline: none; transition: border-color 0.15s; }
+  .field input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(26,138,74,0.12); }
+  .field-err { font-size: 12px; color: var(--red); margin-top: 4px; display: none; }
+  .field-err.show { display: block; }
+  .strength-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden; display: none; }
+  .strength-bar.show { display: block; }
+  .strength-fill { height: 100%; border-radius: 2px; transition: width 0.2s, background 0.2s; }
+  .strength-label { font-size: 12px; margin-top: 4px; }
+  .btn-primary { width: 100%; padding: 11px; background: var(--green); color: #fff; border: none; border-radius: var(--radius); font-size: 15px; font-weight: 500; cursor: pointer; transition: opacity 0.15s; margin-top: 4px; }
+  .btn-primary:hover { opacity: 0.88; }
+  .err-banner { background: var(--red-light); border: 1px solid rgba(192,57,43,0.25); border-radius: var(--radius); padding: 10px 14px; font-size: 13px; color: var(--red); margin-bottom: 12px; display: none; }
+  .err-banner.show { display: block; }
+  .ok-banner { background: var(--green-light); border: 1px solid rgba(26,138,74,0.25); border-radius: var(--radius); padding: 10px 14px; font-size: 13px; color: var(--green-mid); margin-bottom: 12px; display: none; }
+  .ok-banner.show { display: block; }
+  .forgot-link { text-align: right; margin-top: -8px; margin-bottom: 12px; font-size: 13px; }
+  .forgot-link a { color: var(--green); text-decoration: none; cursor: pointer; }
+  .forgot-link a:hover { text-decoration: underline; }
+
+  /* ── APP SHELL ── */
+  .app { display: none; flex-direction: column; min-height: 100vh; }
+  .app.active { display: flex; }
+  .topnav { background: var(--surface); border-bottom: 0.5px solid var(--border-strong); padding: 0 1.5rem; display: flex; align-items: center; height: 56px; gap: 12px; position: sticky; top: 0; z-index: 10; }
+  .topnav .logo-name { flex: 1; }
+  .nav-user { display: flex; align-items: center; gap: 10px; }
+  .nav-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--green-light); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--green-mid); flex-shrink: 0; }
+  .nav-name { font-size: 13px; color: var(--text2); }
+  .nav-guest-chip { font-size: 12px; color: var(--text3); background: var(--bg); border: 0.5px solid var(--border); border-radius: 99px; padding: 3px 10px; }
+  .btn-nav-signin { padding: 6px 14px; border: 1px solid var(--green); border-radius: var(--radius); background: transparent; color: var(--green); font-size: 13px; cursor: pointer; font-weight: 500; }
+  .btn-nav-signin:hover { background: var(--green-light); }
+  .btn-logout { padding: 6px 14px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: transparent; color: var(--text2); font-size: 13px; cursor: pointer; }
+  .btn-logout:hover { background: var(--bg); }
+
+  /* ── GUEST BANNER ── */
+  .guest-banner { background: var(--blue-light); border-bottom: 0.5px solid rgba(24,95,165,0.2); padding: 10px 1.5rem; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .gb-text { font-size: 13px; color: var(--blue); flex: 1; }
+  .gb-btns { display: flex; gap: 8px; }
+  .btn-gb { padding: 5px 14px; border-radius: var(--radius); font-size: 13px; cursor: pointer; font-weight: 500; }
+  .btn-gb-outline { border: 1px solid var(--blue); background: transparent; color: var(--blue); }
+  .btn-gb-outline:hover { background: rgba(24,95,165,0.08); }
+  .btn-gb-fill { border: none; background: var(--blue); color: #fff; }
+  .btn-gb-fill:hover { opacity: 0.88; }
+
+  .app-body { flex: 1; padding: 2rem 1.5rem; max-width: 900px; margin: 0 auto; width: 100%; }
+  .mstrip { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 2rem; }
+  .mcard { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 10px 14px; }
+  .mcard-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+  .mcard-val { font-size: 18px; font-weight: 600; color: var(--text); margin-top: 2px; }
+  .mcard-chg { font-size: 12px; margin-top: 1px; }
+  .up { color: var(--green); }
+  .dn { color: var(--red); }
+  .section-head { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+  .budget-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 99px; font-size: 13px; font-weight: 500; }
+  .badge-starter { background: var(--blue-light); color: var(--blue); }
+  .badge-mid { background: var(--amber-light); color: var(--amber); }
+  .badge-premium { background: var(--green-light); color: var(--green-mid); }
+  .section-head h2 { font-size: 17px; font-weight: 600; }
+  .section-desc { font-size: 13px; color: var(--text2); margin-bottom: 1rem; margin-top: -6px; }
+  .stocks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-bottom: 2.5rem; }
+  .stock-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; cursor: pointer; transition: border-color 0.15s, transform 0.1s; }
+  .stock-card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+  .sc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .sc-sym { font-size: 16px; font-weight: 600; }
+  .sc-name { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .sc-score { text-align: center; }
+  .sc-score-ring { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; }
+  .sc-score-label { font-size: 10px; color: var(--text3); margin-top: 2px; }
+  .score-h { background: var(--green-light); color: var(--green-mid); }
+  .score-m { background: var(--amber-light); color: var(--amber); }
+  .score-l { background: var(--red-light); color: var(--red); }
+  .sc-price { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .sc-chg { font-size: 13px; margin-bottom: 10px; }
+  .sc-signals { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+  .sig { font-size: 11px; padding: 2px 8px; border-radius: 99px; }
+  .sig-g { background: var(--green-light); color: var(--green-mid); }
+  .sig-a { background: var(--amber-light); color: var(--amber); }
+  .sig-r { background: var(--red-light); color: var(--red); }
+  .sig-b { background: var(--blue-light); color: var(--blue); }
+  .sc-inds { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .ind-item { font-size: 11px; }
+  .ind-item .il { color: var(--text3); }
+  .ind-item .iv { font-weight: 500; }
+  .mini-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 2px; overflow: hidden; }
+  .mini-bar-f { height: 100%; border-radius: 2px; }
+  .expand-detail { border-top: 0.5px solid var(--border); margin-top: 12px; padding-top: 12px; display: none; font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .expand-detail strong { color: var(--text); }
+  .expand-detail.open { display: block; }
+  .detail-ask { margin-top: 10px; padding: 7px 12px; width: 100%; border: 1px solid var(--border-strong); border-radius: var(--radius); background: transparent; color: var(--text2); font-size: 13px; cursor: pointer; text-align: left; }
+  .detail-ask:hover { background: var(--bg); }
+  .filter-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.5rem; align-items: center; }
+  .filter-bar label { font-size: 13px; color: var(--text2); }
+  .fbtn { padding: 5px 14px; border: 1px solid var(--border-strong); border-radius: 99px; background: transparent; color: var(--text2); font-size: 13px; cursor: pointer; }
+  .fbtn.on { background: var(--text); color: var(--surface); border-color: var(--text); }
+  .page-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 8px; }
+  .page-meta h1 { font-size: 22px; font-weight: 600; }
+  .date-chip { font-size: 13px; color: var(--text2); background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 5px 12px; }
+  .page-footer { text-align: center; padding: 2rem 1.5rem; font-size: 12px; color: var(--text3); border-top: 0.5px solid var(--border); }
+</style>
+</head>
+<body>
+
+<!-- ════════════════ LANDING PAGE ════════════════ -->
+<div id="landing" class="landing">
+  <nav class="land-nav">
+    <div class="logo-mark"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+    <div class="logo-name">Stock<span>Wise</span></div>
+    <div class="land-nav-actions">
+      <button class="btn-ghost" onclick="openModal('login')">Sign in</button>
+      <button class="btn-green" onclick="openModal('signup')">Create account</button>
+    </div>
+  </nav>
+  <div class="hero">
+    <div class="hero-eyebrow">Beginner-friendly investing</div>
+    <h1>Stocks ranked simply, <span>at any budget</span></h1>
+    <p>Daily picks scored by 5 easy-to-understand signals. Find stocks from $3 to $800+ — no experience needed.</p>
+    <div class="hero-btns">
+      <button class="btn-hero-primary" onclick="enterGuest()">Browse stocks — no sign in needed</button>
+      <button class="btn-hero-ghost" onclick="openModal('signup')">Create free account</button>
+    </div>
+    <p class="hero-note">Free forever. No credit card. Not financial advice.</p>
+  </div>
+  <div class="features">
+    <div class="feat">
+      <div class="feat-icon">🌱</div>
+      <h3>Any budget</h3>
+      <p>Stocks sorted into Under $50, $50–$200, and $200+ tiers so you invest what you have.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📊</div>
+      <h3>Simple scores</h3>
+      <p>Each stock gets a score out of 100 based on trend, momentum, value, risk, and dividends.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🔄</div>
+      <h3>Updated daily</h3>
+      <p>Picks refresh every day so you always see what's looking strong right now.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📖</div>
+      <h3>Plain English</h3>
+      <p>Every indicator explained in language that makes sense — no jargon, no finance degree needed.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ AUTH MODAL ════════════════ -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal-card" id="modalCard">
+    <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+    <div class="modal-logo">
+      <div class="logo-mark"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+      <div class="logo-name">Stock<span>Wise</span></div>
+    </div>
+    <div class="modal-tabs" id="modalTabs">
+      <div class="mtab on" id="tabLogin" onclick="switchTab('login')">Sign in</div>
+      <div class="mtab" id="tabSignup" onclick="switchTab('signup')">Create account</div>
+      <div class="mtab" id="tabReset" style="display:none;" onclick="switchTab('reset')">Reset password</div>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="mpage on" id="mpLogin">
+      <div class="err-banner" id="loginErr"></div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="you@email.com" />
+        <div class="field-err" id="loginEmailErr">Please enter a valid email.</div>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="Your password" />
+        <div class="field-err" id="loginPassErr">Password is required.</div>
+      </div>
+      <div class="forgot-link"><a onclick="switchTab('reset')">Forgot password?</a></div>
+      <button class="btn-primary" onclick="doLogin()">Sign in</button>
+    </div>
+
+    <!-- SIGNUP -->
+    <div class="mpage" id="mpSignup">
+      <div class="err-banner" id="signupErr"></div>
+      <div class="field">
+        <label>Full name</label>
+        <input type="text" id="suName" placeholder="Alex Johnson" />
+        <div class="field-err" id="suNameErr">Name is required.</div>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="suEmail" placeholder="you@email.com" />
+        <div class="field-err" id="suEmailErr">Please enter a valid email.</div>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="suPass" placeholder="Create a strong password" oninput="checkStrength(this.value)" />
+        <div class="strength-bar" id="strengthBar"><div class="strength-fill" id="strengthFill"></div></div>
+        <div class="strength-label" id="strengthLabel"></div>
+        <div class="field-err" id="suPassErr">Password must be at least 8 characters.</div>
+      </div>
+      <div class="field">
+        <label>Confirm password</label>
+        <input type="password" id="suPass2" placeholder="Repeat password" />
+        <div class="field-err" id="suPass2Err">Passwords do not match.</div>
+      </div>
+      <button class="btn-primary" onclick="doSignup()">Create account</button>
+    </div>
+
+    <!-- RESET -->
+    <div class="mpage" id="mpReset">
+      <div class="ok-banner" id="resetOk">Reset link sent! Check your inbox. Returning to sign in...</div>
+      <div id="resetForm">
+        <p style="font-size:13px;color:var(--text2);margin-bottom:14px;">Enter your email and we'll send a link to reset your password.</p>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="resetEmail" placeholder="you@email.com" />
+          <div class="field-err" id="resetEmailErr">Please enter a valid email.</div>
+        </div>
+        <button class="btn-primary" onclick="doReset()">Send reset link</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ APP ════════════════ -->
+<div id="app" class="app">
+  <nav class="topnav">
+    <div class="logo-mark"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+    <div class="logo-name">Stock<span style="color:var(--green);">Wise</span></div>
+    <div class="nav-user" id="navUser"></div>
+  </nav>
+
+  <!-- guest nudge banner — hidden for logged in users -->
+  <div id="guestBanner" class="guest-banner" style="display:none;">
+    <div class="gb-text">You're browsing as a guest. Create a free account to save your preferences.</div>
+    <div class="gb-btns">
+      <button class="btn-gb btn-gb-outline" onclick="openModal('login')">Sign in</button>
+      <button class="btn-gb btn-gb-fill" onclick="openModal('signup')">Create account</button>
+    </div>
+  </div>
+
+  <div class="app-body">
+    <div class="page-meta">
+      <h1>Today's picks</h1>
+      <div class="date-chip" id="appDate"></div>
+    </div>
+    <div class="mstrip" id="mstrip"></div>
+    <div class="filter-bar">
+      <label>Show:</label>
+      <button class="fbtn on" onclick="setFilter('all',this)">All stocks</button>
+      <button class="fbtn" onclick="setFilter('strong',this)">Strong buys</button>
+      <button class="fbtn" onclick="setFilter('dividend',this)">Pays dividends</button>
+      <button class="fbtn" onclick="setFilter('tech',this)">Tech</button>
+    </div>
+    <div id="tierStarter"></div>
+    <div id="tierMid"></div>
+    <div id="tierPremium"></div>
+  </div>
+  <div class="page-footer">Not financial advice. Scores are educational only. Always do your own research before investing.</div>
+</div>
+
+<script>
+/* ── helpers ── */
+function $(id){ return document.getElementById(id); }
+function isEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+/* ── user storage ── */
+function getUsers(){ return JSON.parse(localStorage.getItem('sw_users')||'{}'); }
+function saveUsers(u){ localStorage.setItem('sw_users', JSON.stringify(u)); }
+function getSession(){ try{ return JSON.parse(sessionStorage.getItem('sw_session')); }catch(e){ return null; } }
+function setSession(u){ sessionStorage.setItem('sw_session', JSON.stringify(u)); }
+function clearSession(){ sessionStorage.removeItem('sw_session'); }
+
+/* ── modal ── */
+function openModal(tab){
+  $('modalOverlay').classList.add('open');
+  switchTab(tab||'login');
+  clearModalErrors();
+}
+function closeModal(){ $('modalOverlay').classList.remove('open'); }
+function closeModalOutside(e){ if(e.target===$('modalOverlay')) closeModal(); }
+function clearModalErrors(){
+  ['loginErr','signupErr','loginEmailErr','loginPassErr','suNameErr','suEmailErr','suPassErr','suPass2Err','resetEmailErr'].forEach(id=>{
+    const el=$(id); if(!el) return;
+    el.classList.remove('show');
+  });
+}
+
+function switchTab(t){
+  ['login','signup','reset'].forEach(n=>{
+    $('tab'+cap(n)).classList.toggle('on', n===t);
+    $('mp'+cap(n)).classList.toggle('on', n===t);
+    $('tab'+cap(n)).style.display = (n==='reset' && t!=='reset') ? 'none' : '';
+  });
+  if(t==='reset') $('tabReset').style.display='block';
+  clearModalErrors();
+}
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+/* ── password strength ── */
+function checkStrength(v){
+  const bar=$('strengthBar'), fill=$('strengthFill'), lbl=$('strengthLabel');
+  bar.classList.add('show');
+  let sc=0;
+  if(v.length>=8) sc++;
+  if(/[A-Z]/.test(v)) sc++;
+  if(/[0-9]/.test(v)) sc++;
+  if(/[^A-Za-z0-9]/.test(v)) sc++;
+  const cfg=[
+    {w:'20%',bg:'#c0392b',t:'Weak'},
+    {w:'45%',bg:'#BA7517',t:'Fair'},
+    {w:'70%',bg:'#BA7517',t:'Good'},
+    {w:'100%',bg:'#1a8a4a',t:'Strong'},
+  ];
+  const c=cfg[Math.max(0,sc-1)];
+  fill.style.width=c.w; fill.style.background=c.bg;
+  lbl.textContent=v.length===0?'':c.t; lbl.style.color=c.bg;
+}
+
+/* ── auth actions ── */
+function doLogin(){
+  clearModalErrors();
+  const email=$('loginEmail').value.trim();
+  const pass=$('loginPass').value;
+  let ok=true;
+  if(!isEmail(email)){ $('loginEmailErr').classList.add('show'); ok=false; }
+  if(!pass){ $('loginPassErr').classList.add('show'); ok=false; }
+  if(!ok) return;
+  const users=getUsers();
+  if(!users[email] || users[email].pass!==pass){
+    $('loginErr').textContent='Incorrect email or password.';
+    $('loginErr').classList.add('show'); return;
+  }
+  setSession({email, name:users[email].name});
+  closeModal();
+  launchApp({name:users[email].name, guest:false});
+}
+
+function doSignup(){
+  clearModalErrors();
+  const name=$('suName').value.trim();
+  const email=$('suEmail').value.trim();
+  const pass=$('suPass').value;
+  const pass2=$('suPass2').value;
+  let ok=true;
+  if(!name){ $('suNameErr').classList.add('show'); ok=false; }
+  if(!isEmail(email)){ $('suEmailErr').classList.add('show'); ok=false; }
+  if(pass.length<8){ $('suPassErr').classList.add('show'); ok=false; }
+  if(pass!==pass2){ $('suPass2Err').classList.add('show'); ok=false; }
+  if(!ok) return;
+  const users=getUsers();
+  if(users[email]){
+    $('signupErr').textContent='An account with this email already exists.';
+    $('signupErr').classList.add('show'); return;
+  }
+  /* save account */
+  users[email]={name, pass, created: new Date().toISOString()};
+  saveUsers(users);
+  setSession({email, name});
+  closeModal();
+  launchApp({name, guest:false});
+}
+
+function doReset(){
+  const email=$('resetEmail').value.trim();
+  $('resetEmailErr').classList.remove('show');
+  if(!isEmail(email)){ $('resetEmailErr').classList.add('show'); return; }
+  $('resetForm').style.display='none';
+  $('resetOk').classList.add('show');
+  setTimeout(()=>{
+    $('resetForm').style.display='block';
+    $('resetOk').classList.remove('show');
+    $('resetEmail').value='';
+    switchTab('login');
+  }, 2800);
+}
+
+function enterGuest(){
+  $('landing').style.display='none';
+  launchApp({name:null, guest:true});
+}
+
+function doLogout(){
+  clearSession();
+  $('app').classList.remove('active');
+  $('landing').style.display='flex';
+}
+
+/* ── app launch ── */
+function launchApp(user){
+  $('landing').style.display='none';
+  $('app').classList.add('active');
+
+  /* nav */
+  const navUser=$('navUser');
+  if(user.guest){
+    navUser.innerHTML=`<span class="nav-guest-chip">Guest</span>
+      <button class="btn-nav-signin" onclick="openModal('login')">Sign in</button>`;
+    $('guestBanner').style.display='flex';
+  } else {
+    const initials=user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    navUser.innerHTML=`<div class="nav-avatar">${initials}</div>
+      <span class="nav-name">${user.name.split(' ')[0]}</span>
+      <button class="btn-logout" onclick="doLogout()">Sign out</button>`;
+    $('guestBanner').style.display='none';
+  }
+
+  $('appDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  buildApp();
+}
+
+/* ── check existing session on page load ── */
+(function(){
+  const s=getSession();
+  if(s){ launchApp({name:s.name, guest:false}); }
+})();
+
+/* ── seeded random ── */
+const today=new Date();
+const seed=today.getFullYear()*10000+(today.getMonth()+1)*100+today.getDate();
+let _s=seed;
+function rand(){ _s=(_s*1664525+1013904223)>>>0; return _s/0xFFFFFFFF; }
+
+/* ── market ── */
+const markets=[
+  {label:'S&P 500',base:4892},
+  {label:'Nasdaq',base:17234},
+  {label:'Dow Jones',base:38457},
+  {label:'VIX (fear)',base:14.3,small:true},
+];
+function buildMarket(){
+  $('mstrip').innerHTML='';
+  markets.forEach(m=>{
+    const chg=((rand()-0.47)*(m.small?1.5:1.2)).toFixed(2);
+    const isUp=parseFloat(chg)>=0;
+    const val=m.small?(m.base+parseFloat(chg)*0.5).toFixed(1):Math.round(m.base*(1+parseFloat(chg)/100)).toLocaleString();
+    $('mstrip').innerHTML+=`<div class="mcard"><div class="mcard-label">${m.label}</div><div class="mcard-val">${val}</div><div class="mcard-chg ${isUp?'up':'dn'}">${isUp?'+':''}${chg}% today</div></div>`;
+  });
+}
+
+/* ── stocks ── */
+const allStocks=[
+  {sym:'F',   name:'Ford Motor',       price:12.4, sector:'auto',   div:4.8,tags:['dividend']},
+  {sym:'SIRI',name:'SiriusXM',         price:3.8,  sector:'media',  div:3.2,tags:['dividend']},
+  {sym:'AAL', name:'American Airlines',price:14.2, sector:'travel', div:0,  tags:[]},
+  {sym:'SNAP',name:'Snap Inc',         price:10.6, sector:'tech',   div:0,  tags:['tech']},
+  {sym:'BAC', name:'Bank of America',  price:36.5, sector:'finance',div:2.6,tags:['dividend']},
+  {sym:'T',   name:'AT&T',             price:17.2, sector:'telecom',div:6.8,tags:['dividend']},
+  {sym:'INTC',name:'Intel Corp',       price:30.1, sector:'tech',   div:1.5,tags:['tech','dividend']},
+  {sym:'KO',  name:'Coca-Cola',        price:62.4, sector:'consumer',div:3.3,tags:['dividend']},
+  {sym:'VZ',  name:'Verizon',          price:41.8, sector:'telecom',div:6.4,tags:['dividend']},
+  {sym:'DIS', name:'Disney',           price:110.2,sector:'media',  div:0,  tags:[]},
+  {sym:'JPM', name:'JPMorgan Chase',   price:198.5,sector:'finance',div:2.4,tags:['dividend']},
+  {sym:'JNJ', name:'J&J',             price:158.3,sector:'health', div:2.9,tags:['dividend']},
+  {sym:'PG',  name:'Procter & Gamble', price:165.1,sector:'consumer',div:2.4,tags:['dividend']},
+  {sym:'NFLX',name:'Netflix',          price:628.7,sector:'tech',   div:0,  tags:['tech']},
+  {sym:'AAPL',name:'Apple',            price:189.4,sector:'tech',   div:0.5,tags:['tech','dividend']},
+  {sym:'MSFT',name:'Microsoft',        price:412.9,sector:'tech',   div:0.8,tags:['tech','dividend']},
+  {sym:'GOOGL',name:'Alphabet',        price:178.3,sector:'tech',   div:0,  tags:['tech']},
+  {sym:'AMZN',name:'Amazon',           price:186.9,sector:'tech',   div:0,  tags:['tech']},
+  {sym:'NVDA',name:'NVIDIA',           price:874.2,sector:'tech',   div:0,  tags:['tech']},
+  {sym:'META',name:'Meta Platforms',   price:504.2,sector:'tech',   div:0,  tags:['tech']},
+  {sym:'BRK.B',name:'Berkshire B',     price:408.1,sector:'finance',div:0,  tags:[]},
+  {sym:'GS',  name:'Goldman Sachs',    price:449.0,sector:'finance',div:2.1,tags:['dividend']},
+];
+
+function calcStock(s){
+  const trend=rand(), mom=rand(), val=rand(), safe=rand();
+  const d=Math.min(10,s.div*1.5);
+  return {
+    ...s,
+    score:Math.round(trend*30+mom*20+val*25+safe*15+d),
+    trend,mom,val,safe,
+    px:parseFloat((s.price*(1+(trend-0.5)*0.08)).toFixed(2)),
+    chg:parseFloat(((trend-0.5)*6).toFixed(2)),
+    rsi:Math.round(30+mom*50),
+    pe:parseFloat((10+(1-val)*30).toFixed(1)),
+    beta:parseFloat((0.5+(1-safe)*1.5).toFixed(2)),
+  };
+}
+
+let scoredStocks=[];
+let currentFilter='all';
+let expanded=null;
+
+function scoreClass(sc){ return sc>=70?'score-h':sc>=40?'score-m':'score-l'; }
+
+function getSignals(s){
+  const out=[];
+  if(s.trend>0.65) out.push({c:'sig-g',l:'Uptrend'});
+  else if(s.trend<0.4) out.push({c:'sig-r',l:'Downtrend'});
+  else out.push({c:'sig-a',l:'Sideways'});
+  if(s.mom>0.65) out.push({c:'sig-g',l:'Strong momentum'});
+  else if(s.mom<0.35) out.push({c:'sig-a',l:'Weak momentum'});
+  if(s.val>0.65) out.push({c:'sig-b',l:'Good value'});
+  else if(s.val<0.35) out.push({c:'sig-a',l:'Pricey'});
+  if(s.safe>0.65) out.push({c:'sig-g',l:'Low risk'});
+  else if(s.safe<0.35) out.push({c:'sig-r',l:'Higher risk'});
+  if(s.div>=2) out.push({c:'sig-b',l:s.div+'% dividend'});
+  return out;
+}
+
+function whyText(s){
+  const p=[];
+  if(s.trend>0.65) p.push('the price has been <strong>trending upward</strong>');
+  else if(s.trend<0.4) p.push('the price has been <strong>declining</strong>');
+  else p.push('the price is <strong>moving sideways</strong>');
+  if(s.mom>0.65) p.push('<strong>buying pressure is strong</strong>');
+  else if(s.mom<0.35) p.push('<strong>momentum is weak</strong>');
+  if(s.val>0.65) p.push("it's <strong>reasonably priced</strong> vs earnings");
+  else if(s.val<0.35) p.push("it trades at a <strong>premium valuation</strong>");
+  if(s.div>=2) p.push(`it pays a <strong>${s.div}% dividend</strong>`);
+  return 'Score <strong>'+s.score+'/100</strong>: '+p.join(', and ')+'.';
+}
+
+function toggleExpand(sym){
+  const prev=expanded;
+  expanded=expanded===sym?null:sym;
+  if(prev){ const el=document.querySelector(`[data-detail="${prev}"]`); if(el) el.classList.remove('open'); }
+  if(expanded){ const el=document.querySelector(`[data-detail="${expanded}"]`); if(el) el.classList.add('open'); }
+}
+
+function renderCard(s){
+  const sc=scoreClass(s.score);
+  const chgCls=s.chg>=0?'up':'dn';
+  const chgSign=s.chg>=0?'+':'';
+  const sigs=getSignals(s).map(x=>`<span class="sig ${x.c}">${x.l}</span>`).join('');
+  const rsiC=s.rsi>70?'#c0392b':s.rsi<30?'#185FA5':'#1a8a4a';
+  const betaC=s.beta>1.2?'#c0392b':'#1a8a4a';
+  return `<div class="stock-card" onclick="toggleExpand('${s.sym}')">
+    <div class="sc-top">
+      <div><div class="sc-sym">${s.sym}</div><div class="sc-name">${s.name}</div></div>
+      <div class="sc-score"><div class="sc-score-ring ${sc}">${s.score}</div><div class="sc-score-label">score</div></div>
+    </div>
+    <div class="sc-price">$${s.px.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+    <div class="sc-chg ${chgCls}">${chgSign}${s.chg.toFixed(2)}% today</div>
+    <div class="sc-signals">${sigs}</div>
+    <div class="sc-inds">
+      <div class="ind-item"><div class="il">Momentum (RSI)</div><div class="iv" style="color:${rsiC}">${s.rsi}</div><div class="mini-bar"><div class="mini-bar-f" style="width:${s.rsi}%;background:${rsiC};"></div></div></div>
+      <div class="ind-item"><div class="il">P/E ratio</div><div class="iv">${s.pe}x</div><div class="mini-bar"><div class="mini-bar-f" style="width:${Math.round(100-Math.min(100,s.pe*2))}%;background:#185FA5;"></div></div></div>
+      <div class="ind-item"><div class="il">Risk (Beta)</div><div class="iv" style="color:${betaC}">${s.beta}x</div><div class="mini-bar"><div class="mini-bar-f" style="width:${Math.round(s.beta/2*100)}%;background:${betaC};"></div></div></div>
+      <div class="ind-item"><div class="il">Dividend</div><div class="iv">${s.div>0?s.div+'%':'None'}</div><div class="mini-bar"><div class="mini-bar-f" style="width:${Math.min(100,s.div*14)}%;background:#185FA5;"></div></div></div>
+    </div>
+    <div class="expand-detail" data-detail="${s.sym}">
+      <p>${whyText(s)}</p>
+      <p style="margin-top:8px;font-size:12px;color:var(--text3);"><strong style="color:var(--text2);">What these mean:</strong> RSI above 70 = possibly overbought. P/E compares price to earnings — lower is often better value. Beta above 1 = more volatile than the market. Dividend = yearly cash as % of price.</p>
+      <button class="detail-ask" onclick="event.stopPropagation();window.open('https://finance.yahoo.com/quote/${s.sym}','_blank')">View ${s.sym} on Yahoo Finance →</button>
+    </div>
+  </div>`;
+}
+
+function buildTier(elId, stocks, badge, title, desc){
+  const el=$(elId);
+  if(!stocks.length){ el.innerHTML=''; return; }
+  el.innerHTML=`<div class="section-head"><span class="budget-badge ${badge.cls}">${badge.icon} ${badge.label}</span><h2>${title}</h2></div>
+    <p class="section-desc">${desc}</p>
+    <div class="stocks-grid">${stocks.map(renderCard).join('')}</div>`;
+}
+
+function setFilter(f,btn){
+  currentFilter=f;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderTiers();
+}
+
+function filterStocks(stocks){
+  if(currentFilter==='all') return stocks;
+  if(currentFilter==='strong') return stocks.filter(s=>s.score>=70);
+  if(currentFilter==='dividend') return stocks.filter(s=>s.div>=2);
+  if(currentFilter==='tech') return stocks.filter(s=>s.tags.includes('tech'));
+  return stocks;
+}
+
+function renderTiers(){
+  buildTier('tierStarter',filterStocks(scoredStocks.filter(s=>s.price<=50)),
+    {cls:'badge-starter',icon:'🌱',label:'Under $50'},'Starter budget',
+    'Great for beginners. Buy a share for under $50 — perfect to learn without big risk.');
+  buildTier('tierMid',filterStocks(scoredStocks.filter(s=>s.price>50&&s.price<=200)),
+    {cls:'badge-mid',icon:'📈',label:'$50–$200'},'Mid-range picks',
+    'Well-known companies at accessible prices. A balanced mix of growth and stability.');
+  buildTier('tierPremium',filterStocks(scoredStocks.filter(s=>s.price>200)),
+    {cls:'badge-premium',icon:'⭐',label:'$200+'},'Premium stocks',
+    'High-quality names. Many brokers let you buy fractional shares for as little as $1.');
+}
+
+function buildApp(){
+  _s=seed;
+  buildMarket();
+  scoredStocks=allStocks.map(s=>calcStock(s)).sort((a,b)=>b.score-a.score);
+  renderTiers();
+}
+</script>
+</body>
+</html>
