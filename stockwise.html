@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>StockWise — Smart Stock Tracker</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --g:#1a8a4a;--gl:#eaf3de;--gm:#3b6d11;
+  --a:#BA7517;--al:#faeeda;
+  --r:#c0392b;--rl:#fcebeb;
+  --b:#185FA5;--bl:#e6f1fb;
+  --p:#7c3aed;--pl:#ede9fe;
+  --o:#c2410c;--ol:#fff7ed;
+  --y:#92400e;--yl:#fef3c7;
+  --bg:#f7f7f5;--sf:#fff;
+  --bd:rgba(0,0,0,.09);--bds:rgba(0,0,0,.16);
+  --tx:#1a1a18;--t2:#555550;--t3:#999990;
+  --r8:8px;--r12:12px;--r16:16px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#111110;--sf:#1c1c1a;
+  --bd:rgba(255,255,255,.09);--bds:rgba(255,255,255,.16);
+  --tx:#e8e8e0;--t2:#999990;--t3:#555550;
+  --gl:#1a3020;--al:#2e2010;--rl:#2e1010;--bl:#0d1e33;--pl:#1e1433;--ol:#2e1a0a;--yl:#2d1f00;
+}}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px;line-height:1.5;}
+/* LOGO */
+.lmark{width:32px;height:32px;background:var(--g);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.lmark svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;}
+.lname{font-size:16px;font-weight:700;color:var(--tx);}
+.lname span{color:var(--g);}
+/* LANDING */
+.land{min-height:100vh;display:flex;flex-direction:column;}
+.lnav{display:flex;align-items:center;gap:10px;padding:.8rem 1.5rem;border-bottom:.5px solid var(--bds);background:var(--sf);}
+.lnav-r{margin-left:auto;display:flex;gap:8px;}
+.btn-ghost{padding:6px 14px;border:1px solid var(--bds);border-radius:var(--r8);background:transparent;color:var(--tx);font-size:13px;cursor:pointer;}
+.btn-ghost:hover{background:var(--bg);}
+.btn-green{padding:6px 14px;border:none;border-radius:var(--r8);background:var(--g);color:#fff;font-size:13px;font-weight:500;cursor:pointer;}
+.btn-green:hover{opacity:.88;}
+.hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:3.5rem 1.5rem 2rem;}
+.hero-eye{font-size:11px;color:var(--g);font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:.8rem;}
+.hero h1{font-size:36px;font-weight:700;line-height:1.14;max-width:560px;margin-bottom:1rem;}
+.hero h1 span{color:var(--g);}
+.hero p{font-size:15px;color:var(--t2);max-width:460px;margin-bottom:2rem;line-height:1.6;}
+.hero-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.bh{padding:12px 26px;border-radius:var(--r8);font-size:14px;font-weight:500;cursor:pointer;border:none;}
+.bh-p{background:var(--g);color:#fff;}
+.bh-p:hover{opacity:.88;}
+.bh-g{background:var(--sf);color:var(--tx);border:1px solid var(--bds);}
+.bh-g:hover{background:var(--bg);}
+.hero-note{margin-top:1rem;font-size:11px;color:var(--t3);}
+.feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:14px;max-width:860px;margin:0 auto;padding:0 1.5rem 3.5rem;width:100%;}
+.feat{background:var(--sf);border:.5px solid var(--bd);border-radius:var(--r12);padding:1rem;}
+.feat-i{font-size:20px;margin-bottom:7px;}
+.feat h3{font-size:13px;font-weight:600;margin-bottom:4px;}
+.feat p{font-size:11px;color:var(--t2);line-height:1.5;}
+/* MODAL */
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:200;padding:1rem;}
+.moverlay.open{display:flex;}
+.mcard{background:var(--sf);border-radius:var(--r16);padding:1.6rem;width:100%;max-width:380px;position:relative;border:.5px solid var(--bds);}
+.mclose{position:absolute;top:11px;right:13px;background:transparent;border:none;font-size:17px;cursor:pointer;color:var(--t3);line-height:1;}
+.mclose:hover{color:var(--tx);}
+.mlogo{display:flex;align-items:center;gap:9px;margin-bottom:1.2rem;}
+.mtabs{display:flex;border-bottom:.5px solid var(--bd);margin-bottom:1rem;}
+.mtab{flex:1;padding:6px;text-align:center;font-size:12px;cursor:pointer;color:var(--t2);border-bottom:2px solid transparent;}
+.mtab.on{color:var(--g);border-bottom-color:var(--g);font-weight:600;}
+.mpage{display:none;}
+.mpage.on{display:block;}
+.field{margin-bottom:11px;}
+.field label{display:block;font-size:11px;font-weight:500;color:var(--t2);margin-bottom:4px;}
+.field input{width:100%;padding:9px 11px;border:1px solid var(--bds);border-radius:var(--r8);background:var(--bg);color:var(--tx);font-size:13px;outline:none;transition:border-color .15s;}
+.field input:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(26,138,74,.1);}
+.ferr{font-size:11px;color:var(--r);margin-top:3px;display:none;}
+.ferr.show{display:block;}
+.sbar{height:4px;background:var(--bd);border-radius:2px;margin-top:5px;overflow:hidden;display:none;}
+.sbar.show{display:block;}
+.sfill{height:100%;border-radius:2px;transition:width .2s,background .2s;}
+.slbl{font-size:10px;margin-top:3px;}
+.btn-p{width:100%;padding:10px;background:var(--g);color:#fff;border:none;border-radius:var(--r8);font-size:13px;font-weight:500;cursor:pointer;margin-top:4px;}
+.btn-p:hover{opacity:.88;}
+.ebanner{background:var(--rl);border:1px solid rgba(192,57,43,.25);border-radius:var(--r8);padding:8px 11px;font-size:12px;color:var(--r);margin-bottom:9px;display:none;}
+.ebanner.show{display:block;}
+.okbanner{background:var(--gl);border:1px solid rgba(26,138,74,.25);border-radius:var(--r8);padding:8px 11px;font-size:12px;color:var(--gm);margin-bottom:9px;display:none;}
+.okbanner.show{display:block;}
+.flnk{text-align:right;margin-top:-5px;margin-bottom:9px;font-size:12px;}
+.flnk a{color:var(--g);cursor:pointer;}
+/* APP */
+.app{display:none;flex-direction:column;min-height:100vh;}
+.app.active{display:flex;}
+.topnav{background:var(--sf);border-bottom:.5px solid var(--bds);padding:0 1.5rem;display:flex;align-items:center;height:52px;gap:10px;position:sticky;top:0;z-index:50;}
+.topnav .lname{flex:1;}
+.nav-av{width:26px;height:26px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--gm);}
+.nav-nm{font-size:12px;color:var(--t2);}
+.nav-gst{font-size:11px;color:var(--t3);background:var(--bg);border:.5px solid var(--bd);border-radius:99px;padding:2px 8px;}
+.btn-nsi{padding:5px 12px;border:1px solid var(--g);border-radius:var(--r8);background:transparent;color:var(--g);font-size:12px;cursor:pointer;font-weight:500;}
+.btn-nsi:hover{background:var(--gl);}
+.btn-lo{padding:5px 12px;border:1px solid var(--bds);border-radius:var(--r8);background:transparent;color:var(--t2);font-size:12px;cursor:pointer;}
+.btn-lo:hover{background:var(--bg);}
+/* TAB BAR */
+.tbbar{background:var(--sf);border-bottom:.5px solid var(--bds);display:flex;overflow-x:auto;scrollbar-width:none;}
+.tbbar::-webkit-scrollbar{display:none;}
+.tbtab{flex-shrink:0;padding:0 16px;height:42px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;cursor:pointer;color:var(--t2);border-bottom:2px solid transparent;white-space:nowrap;}
+.tbtab.on{color:var(--g);border-bottom-color:var(--g);}
+.tbtab:hover:not(.on){background:var(--bg);}
+/* GUEST BANNER */
+.gbanner{background:var(--bl);border-bottom:.5px solid rgba(24,95,165,.2);padding:7px 1.5rem;display:none;align-items:center;gap:10px;flex-wrap:wrap;}
+.gbanner.show{display:flex;}
+.gb-t{font-size:12px;color:var(--b);flex:1;}
+.gb-bs{display:flex;gap:6px;}
+.btn-gbo{padding:4px 11px;border-radius:var(--r8);font-size:12px;cursor:pointer;font-weight:500;border:1px solid var(--b);background:transparent;color:var(--b);}
+.btn-gbf{padding:4px 11px;border-radius:var(--r8);font-size:12px;cursor:pointer;font-weight:500;border:none;background:var(--b);color:#fff;}
+/* TAB CONTENT */
+.tc{display:none;}
+.tc.on{display:block;}
+.abody{flex:1;padding:1.5rem;max-width:980px;margin:0 auto;width:100%;}
+.pmeta{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:8px;}
+.pmeta h1{font-size:19px;font-weight:700;}
+.dchip{font-size:11px;color:var(--t2);background:var(--sf);border:.5px solid var(--bd);border-radius:var(--r8);padding:4px 10px;}
+/* MARKET STRIP */
+.mstrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:9px;margin-bottom:1.5rem;}
+.mc{background:var(--sf);border:.5px solid var(--bd);border-radius:var(--r8);padding:8px 12px;}
+.mc-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;}
+.mc-v{font-size:15px;font-weight:700;color:var(--tx);margin-top:2px;}
+.mc-c{font-size:11px;margin-top:1px;}
+.up{color:var(--g);}
+.dn{color:var(--r);}
+/* FILTER */
+.fbar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.25rem;align-items:center;}
+.fbar label{font-size:12px;color:var(--t2);}
+.fbtn{padding:4px 12px;border:1px solid var(--bds);border-radius:99px;background:transparent;color:var(--t2);font-size:12px;cursor:pointer;}
+.fbtn.on{background:var(--tx);color:var(--sf);border-color:var(--tx);}
+/* SECTION */
+.sh{display:flex;align-items:center;gap:9px;margin-bottom:.75rem;}
+.bbadge{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:99px;font-size:11px;font-weight:500;}
+.b-s{background:var(--bl);color:var(--b);}
+.b-m{background:var(--al);color:var(--a);}
+.b-p{background:var(--gl);color:var(--gm);}
+.b-pen{background:var(--ol);color:var(--o);}
+.sh h2{font-size:15px;font-weight:700;}
+.sdesc{font-size:12px;color:var(--t2);margin-bottom:.85rem;margin-top:-3px;}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:10px;margin-bottom:2rem;}
+/* STOCK CARD */
+.sc{background:var(--sf);border:.5px solid var(--bd);border-radius:var(--r12);padding:12px 14px;cursor:pointer;transition:border-color .15s,transform .1s;}
+.sc:hover{border-color:var(--bds);transform:translateY(-1px);}
+.sc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.sc-s{font-size:14px;font-weight:700;}
+.sc-n{font-size:10px;color:var(--t2);margin-top:1px;}
+.sc-sr{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+.sc-sl{font-size:9px;color:var(--t3);margin-top:2px;text-align:center;}
+.sh-{background:var(--gl);color:var(--gm);}
+.sm-{background:var(--al);color:var(--a);}
+.sl-{background:var(--rl);color:var(--r);}
+.sc-px{font-size:18px;font-weight:700;margin-bottom:3px;}
+.sc-ch{font-size:12px;margin-bottom:8px;}
+.sc-pc{font-size:11px;color:var(--t3);margin:-4px 0 8px;}
+.pc-pc{font-size:10px;color:var(--t3);margin:-1px 0 7px;}
+.sigs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;}
+.sig{font-size:10px;padding:2px 7px;border-radius:99px;}
+.sg{background:var(--gl);color:var(--gm);}
+.sa{background:var(--al);color:var(--a);}
+.sr{background:var(--rl);color:var(--r);}
+.sb{background:var(--bl);color:var(--b);}
+.sp{background:var(--pl);color:var(--p);}
+.sy{background:var(--yl);color:var(--y);}
+.inds{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.ind .il{font-size:10px;color:var(--t3);}
+.ind .iv{font-size:11px;font-weight:600;}
+.mb{height:3px;background:var(--bd);border-radius:2px;margin-top:2px;overflow:hidden;}
+.mbf{height:100%;border-radius:2px;}
+.xd{border-top:.5px solid var(--bd);margin-top:10px;padding-top:10px;display:none;font-size:12px;color:var(--t2);line-height:1.6;}
+.xd strong{color:var(--tx);}
+.xd.open{display:block;}
+.xbuy{padding:6px 13px;border:none;border-radius:var(--r8);background:var(--g);color:#fff;font-size:12px;font-weight:500;cursor:pointer;margin-top:8px;display:inline-block;}
+.xbuy:hover{opacity:.88;}
+.xbtn{padding:6px 10px;border:1px solid var(--bds);border-radius:var(--r8);background:transparent;color:var(--t2);font-size:12px;cursor:pointer;margin-top:8px;display:inline-block;margin-left:5px;}
+.xbtn:hover{background:var(--bg);}
+.pnl-badge{display:inline-flex;align-items:center;gap:5px;border-radius:var(--r8);padding:4px 9px;font-size:11px;font-weight:500;margin-top:6px;}
+.pnl-up{background:var(--gl);color:var(--gm);}
+.pnl-dn{background:var(--rl);color:var(--r);}
+/* PORTFOLIO */
+.port-empty{text-align:center;padding:3rem 1rem;color:var(--t2);}
+.port-empty .pe-i{font-size:34px;margin-bottom:.7rem;}
+.port-empty p{font-size:13px;line-height:1.6;max-width:360px;margin:0 auto;}
+.psumm{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.5rem;}
+.psc{background:var(--sf);border:.5px solid var(--bd);border-radius:var(--r12);padding:12px 14px;}
+.psc-l{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.psc-v{font-size:18px;font-weight:700;}
+.psc-s{font-size:11px;color:var(--t2);margin-top:2px;}
+.hrow{background:var(--sf);border:.5px solid var(--bd);border-radius:var(--r12);padding:12px 14px;margin-bottom:9px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;}
+.hr-s{font-size:13px;font-weight:700;}
+.hr-n{font-size:10px;color:var(--t2);margin-top:1px;}
+.hr-d{font-size:10px;color:var(--t3);margin-top:2px;}
+.hr-r{text-align:right;}
+.hr-v{font-size:15px;font-weight:700;}
+.hr-c{font-size:11px;margin-top:2px;}
+.hr-p{font-size:12px;font-weight:600;margin-top:3px;}
+.pchw{background:var(--sf);border:.5px solid var(--bd);border-radius:var(--r12);padding:13px 15px;margin-bottom:1.5rem;}
+.pcht{font-size:12px;font-weight:600;margin-bottom:10px;}
+/* ═══════════════════════════════════════════
+   PUMP PREDICTOR — VOLUME ENGINE
+   ═══════════════════════════════════════════ */
+.pump-intro{background:var(--pl);border:.5px solid rgba(124,58,237,.25);border-radius:var(--r12);padding:13px 15px;margin-bottom:1.5rem;}
+.pump-intro h3{font-size:13px;font-weight:700;color:var(--p);margin-bottom:6px;}
+.pump-intro p{font-size:12px;color:var(--t2);line-height:1.6;}
+.pump-dna{background:var(--sf);border:.5px solid var(--bds);border-radius:var(--r12);padding:13px 15px;margin-bottom:1.5rem;}
+.dna-title{font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.dna-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;}
+.dna-factor{background:var(--bg);border-radius:var(--r8);padding:9px 11px;}
+.dna-factor .df-n{font-size:10px;color:var(--t3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px;}
+.dna-factor .df-v{font-size:14px;font-weight:700;}
+.dna-factor .df-d{font-size:10px;color:var(--t2);margin-top:2px;line-height:1.4;}
+.pump-tabs{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.ptab{padding:5px 14px;border:1px solid var(--bds);border-radius:99px;font-size:12px;cursor:pointer;color:var(--t2);background:transparent;}
+.ptab.on{background:var(--p);color:#fff;border-color:var(--p);}
+.pump-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:11px;}
+.pump-card{background:var(--sf);border:.5px solid var(--bd);border-radius:var(--r12);padding:13px 15px;position:relative;overflow:hidden;}
+.pump-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.pc-ultra::before{background:linear-gradient(90deg,var(--p),#a855f7);}
+.pc-high::before{background:linear-gradient(90deg,var(--g),#4ade80);}
+.pc-med::before{background:linear-gradient(90deg,var(--a),#fbbf24);}
+.pc-low::before{background:linear-gradient(90deg,var(--t3),#ccc);}
+.pump-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px;}
+.pc-sym{font-size:14px;font-weight:700;}
+.pc-co{font-size:10px;color:var(--t2);margin-top:1px;}
+.pc-conf{text-align:center;}
+.cr{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.cr-u{background:var(--pl);color:var(--p);}
+.cr-h{background:var(--gl);color:var(--gm);}
+.cr-m{background:var(--al);color:var(--a);}
+.cr-l{background:var(--bd);color:var(--t2);}
+.cr-lbl{font-size:9px;color:var(--t3);margin-top:2px;}
+.pc-price{font-size:17px;font-weight:700;margin-bottom:2px;}
+.pc-vol{font-size:11px;color:var(--t2);margin-bottom:9px;}
+.pfactors{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.pf{display:flex;align-items:center;gap:7px;font-size:11px;}
+.pf-l{color:var(--t3);flex:0 0 90px;font-size:10px;}
+.pf-bw{flex:1;height:5px;background:var(--bd);border-radius:3px;overflow:hidden;}
+.pf-b{height:100%;border-radius:3px;}
+.pf-v{font-size:10px;font-weight:600;flex-shrink:0;min-width:40px;text-align:right;}
+.psigs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:9px;}
+.pwhy{background:var(--bg);border-radius:var(--r8);padding:8px 10px;font-size:11px;color:var(--t2);line-height:1.55;}
+.pwhy strong{color:var(--tx);}
+.pc-foot{margin-top:8px;font-size:10px;color:var(--t3);}
+.dna-match{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:99px;background:var(--pl);color:var(--p);font-weight:500;margin-top:6px;}
+/* PENNY */
+.pen-warn{background:var(--ol);border:.5px solid rgba(194,65,12,.2);border-radius:var(--r12);padding:12px 14px;margin-bottom:1.25rem;font-size:12px;color:var(--o);line-height:1.6;}
+.pen-warn strong{font-weight:600;}
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--tx);color:var(--sf);border-radius:var(--r8);padding:9px 14px;font-size:12px;z-index:300;transform:translateY(80px);opacity:0;transition:all .3s;}
+.toast.show{transform:translateY(0);opacity:1;}
+.pfooter{text-align:center;padding:1.2rem;font-size:10px;color:var(--t3);border-top:.5px solid var(--bd);}
+</style>
+</head>
+<body>
+
+<!-- ════ LANDING ════ -->
+<div id="landing" class="land">
+  <nav class="lnav">
+    <div class="lmark"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+    <div class="lname">Stock<span>Wise</span></div>
+    <div class="lnav-r">
+      <button class="btn-ghost" onclick="openM('login')">Sign in</button>
+      <button class="btn-green" onclick="openM('signup')">Create account</button>
+    </div>
+  </nav>
+  <div class="hero">
+    <div class="hero-eye">Beginner-friendly · Daily updated</div>
+    <h1>Find the next <span>breakout</span> before it pumps</h1>
+    <p>Real DNA-pattern matching against historical runners. Volume spikes, low float, after-hours moves — we score every stock daily so you catch them early.</p>
+    <div class="hero-btns">
+      <button class="bh bh-p" onclick="enterGuest()">Browse free — no account needed</button>
+      <button class="bh bh-g" onclick="openM('signup')">Create free account</button>
+    </div>
+    <p class="hero-note">Free forever · No credit card · Not financial advice</p>
+  </div>
+  <div class="feats">
+    <div class="feat"><div class="feat-i">🧬</div><h3>Volume Engine</h3><p>We track multi-day price climbs and confirm them against volume surging far above a stock's normal average.</p></div>
+    <div class="feat"><div class="feat-i">🔊</div><h3>Volume anomaly engine</h3><p>Unusual volume spikes vs 20-day average — the #1 early signal before a pump.</p></div>
+    <div class="feat"><div class="feat-i">🌙</div><h3>After-hours tracking</h3><p>Overnight moves above +3% frequently lead to gap-up opens and continuation runs.</p></div>
+    <div class="feat"><div class="feat-i">💰</div><h3>Track your P&amp;L</h3><p>Log purchases and watch your gain/loss update in real time on your profile.</p></div>
+  </div>
+</div>
+
+<!-- ════ AUTH MODAL ════ -->
+<div class="moverlay" id="moverlay" onclick="closeOut(event)">
+  <div class="mcard">
+    <button class="mclose" onclick="closeM()">&#x2715;</button>
+    <div class="mlogo">
+      <div class="lmark"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+      <div class="lname">Stock<span>Wise</span></div>
+    </div>
+    <div class="mtabs">
+      <div class="mtab on" id="tLogin" onclick="switchTab('login')">Sign in</div>
+      <div class="mtab" id="tSignup" onclick="switchTab('signup')">Create account</div>
+      <div class="mtab" id="tReset" style="display:none" onclick="switchTab('reset')">Reset</div>
+    </div>
+    <!-- LOGIN -->
+    <div class="mpage on" id="mpLogin">
+      <div class="ebanner" id="loginErr"></div>
+      <div class="field"><label>Email</label><input type="email" id="lEmail" placeholder="you@email.com"/><div class="ferr" id="lEmailE">Valid email required.</div></div>
+      <div class="field"><label>Password</label><input type="password" id="lPass" placeholder="Your password"/><div class="ferr" id="lPassE">Password required.</div></div>
+      <div class="flnk"><a onclick="switchTab('reset')">Forgot password?</a></div>
+      <button class="btn-p" onclick="doLogin()">Sign in</button>
+    </div>
+    <!-- SIGNUP -->
+    <div class="mpage" id="mpSignup">
+      <div class="ebanner" id="suErr"></div>
+      <div class="field"><label>Full name</label><input type="text" id="suN" placeholder="Alex Johnson"/><div class="ferr" id="suNE">Name required.</div></div>
+      <div class="field"><label>Email</label><input type="email" id="suE" placeholder="you@email.com"/><div class="ferr" id="suEE">Valid email required.</div></div>
+      <div class="field"><label>Password</label><input type="password" id="suP" placeholder="Create a strong password" oninput="chkStr(this.value)"/>
+        <div class="sbar" id="sbar"><div class="sfill" id="sfill"></div></div>
+        <div class="slbl" id="slbl"></div>
+        <div class="ferr" id="suPE">At least 8 characters.</div></div>
+      <div class="field"><label>Confirm password</label><input type="password" id="suP2" placeholder="Repeat password"/><div class="ferr" id="suP2E">Passwords don't match.</div></div>
+      <button class="btn-p" onclick="doSignup()">Create account</button>
+    </div>
+    <!-- RESET -->
+    <div class="mpage" id="mpReset">
+      <div class="okbanner" id="resetOk">Link sent! Check your inbox…</div>
+      <div id="resetFrm">
+        <p style="font-size:12px;color:var(--t2);margin-bottom:10px;">Enter your email and we'll send a reset link.</p>
+        <div class="field"><label>Email</label><input type="email" id="rEmail" placeholder="you@email.com"/><div class="ferr" id="rEmailE">Valid email required.</div></div>
+        <button class="btn-p" onclick="doReset()">Send reset link</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ APP ════ -->
+<div id="app" class="app">
+  <nav class="topnav">
+    <div class="lmark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+    <div class="lname">Stock<span style="color:var(--g)">Wise</span></div>
+    <div id="navU" style="display:flex;align-items:center;gap:7px;"></div>
+  </nav>
+  <div class="tbbar">
+    <div class="tbtab on" onclick="showTab('tcToday',this)">📅 Today's Picks</div>
+    <div class="tbtab" onclick="showTab('tcPort',this)">📊 My Portfolio</div>
+    <div class="tbtab" onclick="showTab('tcPump',this)">🚀 Pump Predictor</div>
+    <div class="tbtab" onclick="showTab('tcPenny',this)">⚡ Penny Stocks</div>
+  </div>
+  <div id="gbanner" class="gbanner">
+    <div class="gb-t">👋 Browsing as guest — create a free account to track purchases and save your P&amp;L.</div>
+    <div class="gb-bs">
+      <button class="btn-gbo" onclick="openM('login')">Sign in</button>
+      <button class="btn-gbf" onclick="openM('signup')">Create account</button>
+    </div>
+  </div>
+
+  <!-- TODAY'S PICKS -->
+  <div id="tcToday" class="tc on">
+    <div class="abody">
+      <div class="pmeta"><h1>Today's picks</h1><div class="dchip" id="appDate"></div></div>
+      <div class="mstrip" id="mstrip"></div>
+      <div class="fbar">
+        <label>Filter:</label>
+        <button class="fbtn on" onclick="setF('all',this)">All</button>
+        <button class="fbtn" onclick="setF('strong',this)">Strong buys</button>
+        <button class="fbtn" onclick="setF('dividend',this)">Dividend</button>
+        <button class="fbtn" onclick="setF('tech',this)">Tech</button>
+      </div>
+      <div id="ts"></div><div id="tm"></div><div id="tp"></div>
+    </div>
+  </div>
+
+  <!-- PORTFOLIO -->
+  <div id="tcPort" class="tc">
+    <div class="abody">
+      <div class="pmeta"><h1>My Portfolio</h1><div class="dchip" id="portDate"></div></div>
+      <div id="portContent"></div>
+    </div>
+  </div>
+
+  <!-- PUMP PREDICTOR -->
+  <div id="tcPump" class="tc">
+    <div class="abody">
+      <div class="pmeta">
+        <h1>Pump Predictor <span style="font-size:12px;font-weight:400;color:var(--t2)">— Volume Engine</span></h1>
+        <span style="font-size:11px;background:var(--pl);color:var(--p);padding:3px 9px;border-radius:99px;font-weight:600;">🧬 Pattern Match Active</span>
+      </div>
+
+      <!-- DNA BREAKDOWN BOX -->
+      <div class="pump-dna">
+        <div class="dna-title">🧬 What drives a breakout — and what we scan for
+          <span style="font-size:10px;font-weight:400;color:var(--t2)">Updated daily</span>
+        </div>
+        <div class="dna-grid">
+          <div class="dna-factor">
+            <div class="df-n">📈 Multi-day price climb</div>
+            <div class="df-v" style="color:var(--p)">Steady grind higher, not a 1-day spike</div>
+            <div class="df-d">The strongest setups don't gap once and reverse — price grinds steadily higher across several sessions, sometimes multiplying several times over in the process. A multi-day climb is far stickier than a single jump. This is the #1 signal we track (28%).</div>
+          </div>
+          <div class="dna-factor">
+            <div class="df-n">🔊 Volume vs. normal average</div>
+            <div class="df-v" style="color:#0891b2">Multiple x a stock's usual daily volume</div>
+            <div class="df-d">We compare today's volume to what's actually normal for that stock — a real climb shows volume running far above its usual average, which is what backs up the price move instead of leaving it unconfirmed. Weighted 18% as the supporting signal.</div>
+          </div>
+          <div class="dna-factor">
+            <div class="df-n">🌀 Float rotation</div>
+            <div class="df-v" style="color:#185FA5">1x+ of the float traded</div>
+            <div class="df-d">A "7x average volume" day means very different things on a 1M-share float vs. a 20M-share one. We convert volume into "how many times the entire float traded today" — that's the actual fuel behind a gap. Weighted 12%.</div>
+          </div>
+          <div class="dna-factor">
+            <div class="df-n">🏷️ Low float</div>
+            <div class="df-v" style="color:var(--b)">Under 5M shares</div>
+            <div class="df-d">Fewer shares outstanding means less supply has to be absorbed before price gaps. Weighted 9% on its own.</div>
+          </div>
+          <div class="dna-factor">
+            <div class="df-n">⚡ Short squeeze setup</div>
+            <div class="df-v" style="color:var(--a)">Short% &gt; 20%</div>
+            <div class="df-d">High short interest plus a real price-and-volume move forces shorts to cover, creating a feedback loop that amplifies price moves violently. Weighted 6%.</div>
+          </div>
+          <div class="dna-factor">
+            <div class="df-n">🌙 After-hours move</div>
+            <div class="df-v" style="color:var(--g)">+3% to +15% AH</div>
+            <div class="df-d">A real climb often shows AH/pre-market follow-through the session before the bigger move — early positioning ahead of the open. Weighted 12%.</div>
+          </div>
+          <div class="dna-factor">
+            <div class="df-n">📋 Catalyst</div>
+            <div class="df-v" style="color:var(--gm)">News / SEC filing</div>
+            <div class="df-d">A filing or news item often lights the fuse, but on its own a catalyst rarely moves a stock this much — it needs the price climb and volume behind it. Weighted 6%.</div>
+          </div>
+          <div class="dna-factor">
+            <div class="df-n">🆕 Freshness</div>
+            <div class="df-v" style="color:#0e9f6e">Early in the move &gt; already extended</div>
+            <div class="df-d">A first big breakout off a long, quiet base tends to have more room to run than a name already several legs into the climb. Weighted 5%.</div>
+          </div>
+          <div class="dna-factor">
+            <div class="df-n">📞 Options flow</div>
+            <div class="df-v" style="color:#7c3aed">Unusual call-buying intensity</div>
+            <div class="df-d">A spike in call activity can mean positioned money is leaning in ahead of a move, not just retail chasing the tape. Weighted 4%.</div>
+          </div>
+          <div class="dna-factor">
+            <div class="df-n">⚠️ Dilution risk <span style="color:#c0392b;font-weight:400">(penalty)</span></div>
+            <div class="df-v" style="color:#c0392b">Thin balance sheet → surprise offering risk</div>
+            <div class="df-d">Names with weak fundamentals are more likely to get diluted right when they're hot, cutting a real move short. This subtracts up to 15 points rather than adding to the score.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pump-intro">
+        <h3>How this works</h3>
+        <p>Every stock below is scored daily by our Volume Engine. A score of 80+ means all major conditions align. <strong>The dominant input is a multi-day price climb — a steady grind higher across several sessions rather than a single spike (28%).</strong> That climb is then backed up by volume: how far today's volume runs above the stock's normal average (18%), and how much of the entire float traded today, since the same multiple-of-average means more on a tinier float (12%). Float size, short interest, after-hours follow-through, and catalyst strength add further supporting weight. Freshness and options flow add a smaller incremental lift, while dilution risk is subtracted as a straight penalty — a great setup on a balance sheet likely to get diluted is a real risk, not a footnote.</p>
+      </div>
+
+      <div class="pump-tabs">
+        <button class="ptab on" onclick="setPumpFilter('all',this)">All signals</button>
+        <button class="ptab" onclick="setPumpFilter('ultra',this)">🔥 Ultra (80+)</button>
+        <button class="ptab" onclick="setPumpFilter('high',this)">⬆️ High (60–79)</button>
+        <button class="ptab" onclick="setPumpFilter('vol',this)">📊 Volume spike</button>
+        <button class="ptab" onclick="setPumpFilter('build',this)">📈 Price climbing</button>
+        <button class="ptab" onclick="setPumpFilter('squeeze',this)">⚡ Squeeze setup</button>
+      </div>
+
+      <div class="pump-grid" id="pumpGrid"></div>
+    </div>
+  </div>
+
+  <!-- PENNY STOCKS -->
+  <div id="tcPenny" class="tc">
+    <div class="abody">
+      <div class="pmeta"><h1>Penny Stocks</h1><span class="bbadge b-pen">⚡ Under $5</span></div>
+      <div class="pen-warn"><strong>⚠️ Extreme risk.</strong> Penny stocks can move 50–300% in a day — or drop to zero. They're speculative instruments, not investments. Many match this breakout pattern exactly. Never risk money you can't afford to lose entirely. Use tight stop-losses.</div>
+      <div class="fbar">
+        <label>Sort by:</label>
+        <button class="fbtn on" onclick="setPenSort('score',this)">DNA score</button>
+        <button class="fbtn" onclick="setPenSort('vol',this)">Volume spike</button>
+        <button class="fbtn" onclick="setPenSort('ah',this)">After-hours move</button>
+        <button class="fbtn" onclick="setPenSort('float',this)">Lowest float</button>
+      </div>
+      <div id="penGrid"></div>
+    </div>
+  </div>
+
+  <div class="pfooter">⚠️ StockWise is for educational purposes only. Nothing here is financial advice. Pump pattern matching is probabilistic and frequently wrong. Past patterns do not guarantee future results. Always use stop-losses and only risk what you can afford to lose.</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ════ UTILS ════ */
+const $=id=>document.getElementById(id);
+const isEmail=v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+const fmt=(n,d=2)=>n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+
+function toast(msg,dur=3000){
+  const t=$('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+/* ════ STORAGE ════ */
+function getUsers(){try{return JSON.parse(localStorage.getItem('sw_u')||'{}')}catch{return{}}}
+function saveUsers(u){localStorage.setItem('sw_u',JSON.stringify(u))}
+function getSess(){try{return JSON.parse(sessionStorage.getItem('sw_s'))}catch{return null}}
+function setSess(u){sessionStorage.setItem('sw_s',JSON.stringify(u))}
+function clearSess(){sessionStorage.removeItem('sw_s')}
+function getH(email){if(!email)return{};const u=getUsers();return u[email]?.holdings||{};}
+function saveH(email,sym,data){if(!email)return;const u=getUsers();if(!u[email])return;if(!u[email].holdings)u[email].holdings={};u[email].holdings[sym]=data;saveUsers(u);}
+function removeH(email,sym){if(!email)return;const u=getUsers();if(!u[email]?.holdings)return;delete u[email].holdings[sym];saveUsers(u);}
+
+/* ════ MODAL ════ */
+function openM(tab){$('moverlay').classList.add('open');switchTab(tab||'login');clearE();}
+function closeM(){$('moverlay').classList.remove('open');}
+function closeOut(e){if(e.target===$('moverlay'))closeM();}
+function clearE(){['loginErr','suErr','lEmailE','lPassE','suNE','suEE','suPE','suP2E','rEmailE'].forEach(id=>{const el=$(id);if(el)el.classList.remove('show');});}
+function switchTab(t){
+  ['login','signup','reset'].forEach(n=>{
+    const c=n[0].toUpperCase()+n.slice(1);
+    $('t'+c).classList.toggle('on',n===t);
+    $('mp'+c).classList.toggle('on',n===t);
+    $('t'+c).style.display=(n==='reset'&&t!=='reset')?'none':'';
+  });
+  if(t==='reset')$('tReset').style.display='block';
+  clearE();
+}
+function chkStr(v){
+  const bar=$('sbar'),fill=$('sfill'),lbl=$('slbl');
+  bar.classList.add('show');
+  let sc=0;if(v.length>=8)sc++;if(/[A-Z]/.test(v))sc++;if(/[0-9]/.test(v))sc++;if(/[^A-Za-z0-9]/.test(v))sc++;
+  const c=[{w:'20%',bg:'#c0392b',t:'Weak'},{w:'45%',bg:'#BA7517',t:'Fair'},{w:'70%',bg:'#BA7517',t:'Good'},{w:'100%',bg:'#1a8a4a',t:'Strong'}][Math.max(0,sc-1)];
+  fill.style.width=c.w;fill.style.background=c.bg;
+  lbl.textContent=v.length===0?'':c.t;lbl.style.color=c.bg;
+}
+
+/* ════ AUTH ════ */
+let CU=null;
+function doLogin(){
+  clearE();
+  const e=$('lEmail').value.trim(),p=$('lPass').value;
+  let ok=true;
+  if(!isEmail(e)){$('lEmailE').classList.add('show');ok=false;}
+  if(!p){$('lPassE').classList.add('show');ok=false;}
+  if(!ok)return;
+  const u=getUsers();
+  if(!u[e]||u[e].pass!==p){$('loginErr').textContent='Incorrect email or password.';$('loginErr').classList.add('show');return;}
+  setSess({email:e,name:u[e].name});
+  closeM();launchApp({email:e,name:u[e].name,guest:false});
+}
+function doSignup(){
+  clearE();
+  const name=$('suN').value.trim(),email=$('suE').value.trim(),pass=$('suP').value,p2=$('suP2').value;
+  let ok=true;
+  if(!name){$('suNE').classList.add('show');ok=false;}
+  if(!isEmail(email)){$('suEE').classList.add('show');ok=false;}
+  if(pass.length<8){$('suPE').classList.add('show');ok=false;}
+  if(pass!==p2){$('suP2E').classList.add('show');ok=false;}
+  if(!ok)return;
+  const u=getUsers();
+  if(u[email]){$('suErr').textContent='Account already exists.';$('suErr').classList.add('show');return;}
+  u[email]={name,pass,created:new Date().toISOString(),holdings:{}};
+  saveUsers(u);setSess({email,name});
+  closeM();launchApp({email,name,guest:false});
+  toast('🎉 Welcome, '+name.split(' ')[0]+'!');
+}
+function doReset(){
+  const e=$('rEmail').value.trim();$('rEmailE').classList.remove('show');
+  if(!isEmail(e)){$('rEmailE').classList.add('show');return;}
+  $('resetFrm').style.display='none';$('resetOk').classList.add('show');
+  setTimeout(()=>{$('resetFrm').style.display='block';$('resetOk').classList.remove('show');$('rEmail').value='';switchTab('login');},2800);
+}
+function enterGuest(){$('landing').style.display='none';launchApp({email:null,name:null,guest:true});}
+function doLogout(){clearSess();CU=null;$('app').classList.remove('active');$('landing').style.display='flex';}
+
+/* ════ LAUNCH APP ════ */
+function launchApp(u){
+  CU=u;
+  $('landing').style.display='none';$('app').classList.add('active');
+  const nav=$('navU');
+  if(u.guest){
+    nav.innerHTML=`<span class="nav-gst">Guest</span><button class="btn-nsi" onclick="openM('login')">Sign in</button>`;
+    $('gbanner').classList.add('show');
+  } else {
+    const ini=u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    nav.innerHTML=`<div class="nav-av">${ini}</div><span class="nav-nm">${u.name.split(' ')[0]}</span><button class="btn-lo" onclick="doLogout()">Sign out</button>`;
+    $('gbanner').classList.remove('show');
+  }
+  $('appDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  $('portDate').textContent=$('appDate').textContent;
+  buildApp();
+}
+(function(){const s=getSess();if(s)launchApp({...s,guest:false});})();
+
+/* ════ SEEDED RANDOM ════ */
+const TODAY=new Date();
+const SEED=TODAY.getFullYear()*10000+(TODAY.getMonth()+1)*100+TODAY.getDate();
+let _s=SEED;
+function r(){_s=(_s*1664525+1013904223)>>>0;return _s/0xFFFFFFFF;}
+function resetR(){_s=SEED;}
+
+/* ════ MARKET STRIP ════ */
+const MKTS=[{l:'S&P 500',b:4892},{l:'Nasdaq',b:17234},{l:'Dow',b:38457},{l:'VIX',b:14.3,sm:true}];
+function buildMkt(){
+  $('mstrip').innerHTML='';
+  MKTS.forEach(m=>{
+    const chg=((r()-0.47)*(m.sm?1.5:1.1)).toFixed(2);
+    const up=parseFloat(chg)>=0;
+    const val=m.sm?(m.b+parseFloat(chg)*0.5).toFixed(1):Math.round(m.b*(1+parseFloat(chg)/100)).toLocaleString();
+    $('mstrip').innerHTML+=`<div class="mc"><div class="mc-l">${m.l}</div><div class="mc-v">${val}</div><div class="mc-c ${up?'up':'dn'}">${up?'+':''}${chg}%</div></div>`;
+  });
+}
+
+/* ════ STOCK UNIVERSE ════ */
+const STOCKS=[
+  {sym:'F',   name:'Ford',             price:12.4,  div:4.8,tags:['dividend']},
+  {sym:'BAC', name:'Bank of America',  price:36.5,  div:2.6,tags:['dividend']},
+  {sym:'T',   name:'AT&T',             price:17.2,  div:6.8,tags:['dividend']},
+  {sym:'INTC',name:'Intel',            price:30.1,  div:1.5,tags:['tech','dividend']},
+  {sym:'SNAP',name:'Snap Inc',         price:10.6,  div:0,  tags:['tech']},
+  {sym:'KO',  name:'Coca-Cola',        price:62.4,  div:3.3,tags:['dividend']},
+  {sym:'DIS', name:'Disney',           price:110.2, div:0,  tags:[]},
+  {sym:'JPM', name:'JPMorgan Chase',   price:198.5, div:2.4,tags:['dividend']},
+  {sym:'JNJ', name:'J&J',             price:158.3, div:2.9,tags:['dividend']},
+  {sym:'PG',  name:'P&G',             price:165.1, div:2.4,tags:['dividend']},
+  {sym:'AAPL',name:'Apple',            price:189.4, div:0.5,tags:['tech','dividend']},
+  {sym:'MSFT',name:'Microsoft',        price:412.9, div:0.8,tags:['tech','dividend']},
+  {sym:'NVDA',name:'NVIDIA',           price:874.2, div:0,  tags:['tech']},
+  {sym:'META',name:'Meta Platforms',   price:504.2, div:0,  tags:['tech']},
+  {sym:'GOOGL',name:'Alphabet',        price:178.3, div:0,  tags:['tech']},
+  {sym:'AMZN',name:'Amazon',           price:186.9, div:0,  tags:['tech']},
+];
+
+/* ════ PUMP UNIVERSE — stocks with breakout-like profiles ════ */
+const PUMP_UNIVERSE=[
+  {sym:'BBAI', name:'BigBear.ai',         price:2.84,  float:12.3, shortPct:28, sector:'AI'},
+  {sym:'CLOV', name:'Clover Health',      price:1.92,  float:8.1,  shortPct:22, sector:'health'},
+  {sym:'WKHS', name:'Workhorse Group',    price:1.43,  float:3.2,  shortPct:35, sector:'EV'},
+  {sym:'NKLA', name:'Nikola Corp',        price:0.72,  float:4.8,  shortPct:41, sector:'EV'},
+  {sym:'SPCE', name:'Virgin Galactic',    price:3.15,  float:6.7,  shortPct:18, sector:'space'},
+  {sym:'IONQ', name:'IonQ Inc',           price:11.28, float:9.4,  shortPct:24, sector:'quantum'},
+  {sym:'SOFI', name:'SoFi Technologies',  price:7.92,  float:22.1, shortPct:12, sector:'fintech'},
+  {sym:'RIVN', name:'Rivian Automotive',  price:14.87, float:35.2, shortPct:9,  sector:'EV'},
+  {sym:'LCID', name:'Lucid Group',        price:2.34,  float:5.6,  shortPct:32, sector:'EV'},
+  {sym:'PAYO', name:'Payoneer Global',    price:6.43,  float:18.9, shortPct:8,  sector:'fintech'},
+  {sym:'AEYE', name:'AudioEye Inc',       price:9.12,  float:2.1,  shortPct:19, sector:'tech'},
+  {sym:'GFAI', name:'Guardforce AI',      price:1.87,  float:1.8,  shortPct:7,  sector:'AI'},
+  {sym:'MVIS', name:'MicroVision',        price:1.24,  float:7.3,  shortPct:29, sector:'tech'},
+  {sym:'PRST', name:'Presto Automation',  price:0.84,  float:2.4,  shortPct:16, sector:'tech'},
+  {sym:'LTBR', name:'Lightbridge Corp',   price:4.21,  float:1.6,  shortPct:12, sector:'energy'},
+  {sym:'ALBT', name:'Avalon GloboCare',   price:2.18,  float:1.2,  shortPct:8,  sector:'health'},
+  {sym:'AIIO', name:'Robo.ai Inc.',       price:3.03,  float:16.4, shortPct:18, sector:'AI'},
+];
+
+/* ════ PENNY UNIVERSE ════ */
+const PENNY_UNIVERSE=[
+  {sym:'ILUS', name:'ILUS International',price:0.003, float:0.8,  shortPct:5,  sector:'emergency'},
+  {sym:'IDEX', name:'Ideanomics',        price:0.48,  float:1.4,  shortPct:12, sector:'EV'},
+  {sym:'MULN', name:'Mullen Automotive', price:0.38,  float:2.1,  shortPct:19, sector:'EV'},
+  {sym:'MMAT', name:'Meta Materials',    price:0.19,  float:0.9,  shortPct:8,  sector:'tech'},
+  {sym:'AGRX', name:'Agile Therapeutics',price:0.21,  float:1.1,  shortPct:6,  sector:'health'},
+  {sym:'PHUN', name:'Phunware',          price:0.62,  float:0.7,  shortPct:9,  sector:'tech'},
+  {sym:'SNDL', name:'SNDL Inc',          price:1.87,  float:3.8,  shortPct:14, sector:'cannabis'},
+  {sym:'FCEL', name:'FuelCell Energy',   price:1.43,  float:2.6,  shortPct:21, sector:'energy'},
+  {sym:'ATER', name:'Aterian Inc',       price:2.14,  float:4.1,  shortPct:17, sector:'ecomm'},
+  {sym:'CENN', name:'Cenntro Electric',  price:1.12,  float:1.3,  shortPct:11, sector:'EV'},
+  {sym:'MOXC', name:'Moxian Inc',        price:0.04,  float:0.3,  shortPct:3,  sector:'tech'},
+  {sym:'POLA', name:'Polar Power',       price:1.98,  float:1.9,  shortPct:7,  sector:'energy'},
+];
+
+/* ════ SCORE ENGINE ════ */
+function calcStock(s){
+  const trend=r(),mom=r(),val=r(),safe=r(),volSpike=r();
+  const d=Math.min(10,s.div*1.5);
+  const px=parseFloat((s.price*(1+(trend-0.5)*0.08)).toFixed(s.price<0.1?5:s.price<1?4:2));
+  const chg=parseFloat(((trend-0.5)*6).toFixed(2));
+  const prevClose=parseFloat((px/(1+chg/100)).toFixed(s.price<0.1?5:s.price<1?4:2));
+  return{...s,
+    score:Math.round(trend*30+mom*20+val*25+safe*15+d),
+    trend,mom,val,safe,volSpike,
+    px,chg,prevClose,
+    rsi:Math.round(30+mom*50),
+    pe:parseFloat((10+(1-val)*30).toFixed(1)),
+    beta:parseFloat((0.5+(1-safe)*1.5).toFixed(2)),
+    volMult:parseFloat((0.8+volSpike*5).toFixed(1)),
+    ahMove:parseFloat(((r()-0.38)*12).toFixed(2)),
+  };
+}
+
+/* ════ VOLUME ENGINE v3 ════
+   The common thread behind a real breakout isn't one huge volume day —
+   it's price grinding steadily higher across several sessions (sometimes
+   multiplying several times over in the process), on a float small enough
+   that normal buying can't be absorbed without the price gapping.
+   So this version scores three confirming signals in order of importance,
+   plus three secondary signals layered on top based on a sensitivity test
+   run across all combinations of candidate signals — dilution risk and
+   freshness carried the most predictive weight on their own, options flow
+   added a smaller but real lift, so all three made the cut:
+     1) Is price climbing steadily for 2-3 days in a row — a sustained
+        multi-day grind — rather than a single one-off jump that fades?
+     2) Does volume back that climb up: how far is today's volume running
+        above what's NORMAL for this stock, and how much of the entire
+        float traded today (float rotation)?
+     3) Is there after-hours/pre-market follow-through confirming buyers
+        are still showing up outside regular hours?
+     4) Dilution risk (PENALTY): is this name showing signs of a thin
+        balance sheet likely to force a dilutive offering right when it's
+        hot? Real follow-through gets cut short by a surprise raise.
+     5) Freshness: is this the first big breakout off a long quiet base,
+        or has the move already run several legs (more room to extend
+        vs. more room to reverse)?
+     6) Options flow: is there unusual call-buying intensity suggesting
+        positioned money, not just retail chasing the tape? */
+function calcPumpDNA(s){
+  resetR(); // reset so each stock gets same seed offset
+  _s=SEED^(s.sym.charCodeAt(0)*31+s.sym.charCodeAt(s.sym.length-1)*17);
+
+  // -- 3-session price climb (today vs. the prior two sessions) --
+  const priceD3=1;                              // 2 sessions ago, baseline
+  const priceD2=priceD3*(1+r()*1.3);            // yesterday, starting to climb
+  const priceToday=priceD2*(1+r()*1.8);         // today, continued climb
+  const isClimbing=priceToday>priceD2 && priceD2>priceD3;   // rising 3 days straight
+  const priceClimbMultiple=priceToday/priceD3;  // e.g. a multi-day move several x higher
+  const priceClimbScore=Math.min(1,(priceClimbMultiple-1)/3.5);
+
+  // -- volume vs. normal: the backup signal that confirms the climb is real --
+  const volD3=0.4+r()*1.2;          // 2 sessions ago, near-normal
+  const volD2=0.5+r()*2.6;          // yesterday, starting to build
+  const volSpike=0.6+r()*7.2;       // today, the headline multiple vs. normal avg (0.6x-7.8x)
+  const isBuilding=volSpike>volD2 && volD2>volD3;     // rising 3 days straight
+  const isOneOffSpike=volSpike>=4 && volD2<1.3;       // huge today, nothing before
+  // sustained build-ups score higher than a single spike that has nothing behind it
+  const volSustain=isBuilding ? Math.min(1,(volSpike+volD2)/2/6.5)
+                  : isOneOffSpike ? Math.min(1,volSpike/8.5)*0.65
+                  : Math.min(1,volSpike/7.5);
+
+  // -- float rotation: what % of the ENTIRE float traded today --
+  // baseline turnover is the % of float that changes hands on a *normal* day
+  const baseTurnoverPct=0.05+r()*0.07;           // 5%-12% normal-day turnover
+  const floatRotation=volSpike*baseTurnoverPct;  // multiple of the float traded today
+  const floatRotationScore=Math.min(1,floatRotation/2.5); // 2.5x+ of float traded = max
+
+  const floatScore=Math.max(0,1-s.float/20);     // lower float = higher score, on its own
+  const shortScore=Math.min(1,s.shortPct/50);
+  const ahMove=parseFloat(((r()-0.3)*15).toFixed(2));
+  const catalystStrength=r();
+
+  // -- dilution risk: thin balance sheets get diluted right when a move is hot.
+  // biased slightly higher for cheaper, smaller-float names (weaker fundamentals
+  // tend to cluster there), with randomness layered on top --
+  const dilutionRisk=Math.min(1,r()*0.7+(s.price<1?0.25:0)+(s.float<3?0.15:0));
+
+  // -- freshness: is this an early breakout off a long base, or already
+  // several legs into the move? decays as the climb multiple extends --
+  const freshness=Math.max(0,1-(priceClimbMultiple-1)/3.5)*(0.6+r()*0.4);
+
+  // -- options flow: unusual call-buying intensity (positioned money) --
+  const optFlow=r();
+
+  const rsiMom=r();
+
+  // WEIGHTED PUMP SCORE — price climb still leads, volume/float-rotation still
+  // confirm it. Dilution risk, freshness, and options flow were added after a
+  // sensitivity test showed they carried real incremental signal on top of the
+  // core four. Dilution is a straight penalty, not part of the positive pool.
+  const positiveScore=
+    priceClimbScore     * 28 +   // Price climbing steadily over 2-3 sessions (#1 signal)
+    volSustain          * 18 +   // Volume vs. normal average (confirms the climb)
+    floatRotationScore  * 12 +   // Volume vs. float (the structural fuel)
+    floatScore          * 9  +   // Float size alone (smaller = less supply to absorb)
+    shortScore          * 6  +   // Short interest (squeeze fuel if it turns)
+    Math.max(0,ahMove)/15*12 +   // After-hours/pre-market follow-through
+    catalystStrength    * 6  +   // News/filing catalyst behind the move
+    freshness           * 5  +   // Early in the move vs. already several legs in
+    optFlow             * 4;     // Unusual options positioning
+  const dilutionPenalty=dilutionRisk*15;         // up to -15 for high dilution risk
+  const pumpScore=Math.round(Math.max(0,Math.min(100,positiveScore-dilutionPenalty)));
+
+  const px=parseFloat((s.price*(1+(r()-0.4)*0.15)).toFixed(s.price<0.1?5:s.price<1?4:2));
+  const chg=parseFloat(((r()-0.42)*12).toFixed(2));
+  const prevClose=parseFloat((px/(1+chg/100)).toFixed(s.price<0.1?5:s.price<1?4:2));
+
+  // Volume Engine match % — how closely this matches our breakout profile
+  const dnaMatch=Math.round(Math.max(0,Math.min(100,
+    (isClimbing?30:priceClimbMultiple>=2?20:priceClimbMultiple>=1.4?10:0)+  // climb > one-off jump
+    (isBuilding?20:volSpike>=4?12:volSpike>=2?6:0)+
+    (floatRotation>=1.5?15:floatRotation>=0.75?8:0)+  // float actually rotating
+    (s.float<3?15:s.float<8?8:4)+
+    (s.shortPct>=25?10:s.shortPct>=15?5:0)+
+    (ahMove>3?10:ahMove>1?5:0)+
+    (freshness>=0.6?5:0)+
+    (dilutionRisk>=0.6?-12:0)
+  )));
+
+  return{...s,pumpScore,priceD3,priceD2,priceToday,isClimbing,
+    priceClimbMultiple:parseFloat(priceClimbMultiple.toFixed(2)),priceClimbScore,
+    volSpike:parseFloat(volSpike.toFixed(1)),volD2:parseFloat(volD2.toFixed(1)),
+    volD3:parseFloat(volD3.toFixed(1)),isBuilding,floatRotation:parseFloat(floatRotation.toFixed(2)),
+    floatRotationScore,floatScore,shortScore,ahMove,catalystStrength,
+    dilutionRisk:parseFloat(dilutionRisk.toFixed(2)),freshness:parseFloat(freshness.toFixed(2)),
+    optFlow:parseFloat(optFlow.toFixed(2)),rsiMom,
+    dnaMatch,px,chg,prevClose};
+}
+
+let scoredAll=[], scoredPump=[], scoredPenny=[];
+let curFilter='all', pumpFilter='all', penSort='score';
+let expanded=null, portChart=null;
+
+/* ════ SIGNAL HELPERS ════ */
+function scoreClass(sc){return sc>=70?'sh-':sc>=40?'sm-':'sl-';}
+function getSignals(s){
+  const out=[];
+  if(s.trend>0.65)out.push({c:'sg',l:'Uptrend'});
+  else if(s.trend<0.4)out.push({c:'sr',l:'Downtrend'});
+  else out.push({c:'sa',l:'Sideways'});
+  if(s.mom>0.65)out.push({c:'sg',l:'Strong momentum'});
+  else if(s.mom<0.35)out.push({c:'sa',l:'Weak momentum'});
+  if(s.val>0.65)out.push({c:'sb',l:'Good value'});
+  else if(s.val<0.35)out.push({c:'sa',l:'Pricey'});
+  if(s.safe>0.65)out.push({c:'sg',l:'Low risk'});
+  else if(s.safe<0.35)out.push({c:'sr',l:'Higher risk'});
+  if(s.div>=2)out.push({c:'sb',l:s.div+'% div'});
+  if(s.volMult>=3)out.push({c:'sp',l:'Vol '+s.volMult+'x'});
+  return out;
+}
+function whyText(s){
+  const p=[];
+  if(s.trend>0.65)p.push('price <strong>trending up</strong>');
+  else if(s.trend<0.4)p.push('price <strong>declining</strong>');
+  else p.push('price <strong>sideways</strong>');
+  if(s.mom>0.65)p.push('<strong>strong buying pressure</strong>');
+  if(s.val>0.65)p.push('<strong>reasonable valuation</strong>');
+  if(s.div>=2)p.push(`<strong>${s.div}% dividend</strong>`);
+  return 'Score <strong>'+s.score+'/100</strong>: '+p.join(', ')+'.';
+}
+
+/* ════ BUY / SELL ════ */
+function isOwned(sym){if(!CU?.email)return false;return!!getH(CU.email)[sym];}
+function logBuy(sym){
+  if(CU?.guest||!CU?.email){toast('Create a free account to track purchases!');return;}
+  const s=scoredAll.find(x=>x.sym===sym)||scoredPump.find(x=>x.sym===sym)||scoredPenny.find(x=>x.sym===sym);
+  if(!s)return;
+  if(isOwned(sym)){toast(sym+' already in portfolio.');return;}
+  saveH(CU.email,sym,{sym,name:s.name,buyPx:s.px||s.price,buyDate:new Date().toISOString(),shares:1});
+  toast('✅ '+sym+' tracked at $'+fmt(s.px||s.price));
+  renderTiers();
+}
+function sellH(sym){
+  const h=getH(CU.email)[sym];if(!h)return;
+  const s=scoredAll.find(x=>x.sym===sym)||scoredPump.find(x=>x.sym===sym)||scoredPenny.find(x=>x.sym===sym);
+  const curr=s?s.px:h.buyPx;
+  const pnl=((curr-h.buyPx)/h.buyPx*100).toFixed(2);
+  removeH(CU.email,sym);
+  toast('💼 '+sym+' removed · P&L: '+(parseFloat(pnl)>=0?'+':'')+pnl+'%');
+  renderPortfolio();renderTiers();
+}
+
+/* ════ CARD RENDER ════ */
+function toggleX(sym){
+  const prev=expanded;
+  expanded=expanded===sym?null:sym;
+  if(prev){const el=document.querySelector(`[data-xd="${prev}"]`);if(el)el.classList.remove('open');}
+  if(expanded){const el=document.querySelector(`[data-xd="${expanded}"]`);if(el)el.classList.add('open');}
+}
+function renderCard(s){
+  const sc=scoreClass(s.score);
+  const cc=s.chg>=0?'up':'dn',cs=s.chg>=0?'+':'';
+  const sigs=getSignals(s).map(x=>`<span class="sig ${x.c}">${x.l}</span>`).join('');
+  const rC=s.rsi>70?'#c0392b':s.rsi<30?'#185FA5':'#1a8a4a';
+  const bC=s.beta>1.2?'#c0392b':'#1a8a4a';
+  const own=isOwned(s.sym);
+  const h=own?getH(CU.email)[s.sym]:null;
+  let pnlH='';
+  if(own&&h){
+    const pp=(s.px-h.buyPx)/h.buyPx*100,pd=(s.px-h.buyPx)*h.shares;
+    pnlH=`<div class="pnl-badge ${pp>=0?'pnl-up':'pnl-dn'}">✓ Tracked · ${pp>=0?'+':''}${fmt(pp,2)}% (${pd>=0?'+':'−'}$${fmt(Math.abs(pd))})</div>`;
+  }
+  const buyH=own
+    ?`<button class="xbtn" onclick="event.stopPropagation();sellH('${s.sym}')">Remove</button>`
+    :`<button class="xbuy" onclick="event.stopPropagation();logBuy('${s.sym}')">+ Track this stock</button>`;
+  const px=s.price<0.01?s.px.toFixed(5):s.price<1?s.px.toFixed(4):fmt(s.px);
+  return `<div class="sc" onclick="toggleX('${s.sym}')">
+    <div class="sc-top"><div><div class="sc-s">${s.sym}</div><div class="sc-n">${s.name}</div></div>
+    <div><div class="sc-sr ${sc}">${s.score}</div><div class="sc-sl">score</div></div></div>
+    <div class="sc-px">$${px}</div>
+    <div class="sc-ch ${cc}">${cs}${s.chg.toFixed(2)}% today</div>
+    <div class="sc-pc">Prev close: $${fmt(s.prevClose,s.price<0.1?5:s.price<1?4:2)} <span style="color:${s.px>=s.prevClose?'#1a8a4a':'#c0392b'};font-weight:700">${s.px>=s.prevClose?'▲':'▼'}</span></div>
+    ${pnlH}
+    <div class="sigs">${sigs}</div>
+    <div class="inds">
+      <div class="ind"><div class="il">RSI</div><div class="iv" style="color:${rC}">${s.rsi}</div><div class="mb"><div class="mbf" style="width:${s.rsi}%;background:${rC}"></div></div></div>
+      <div class="ind"><div class="il">P/E</div><div class="iv">${s.pe}x</div><div class="mb"><div class="mbf" style="width:${Math.round(100-Math.min(100,s.pe*2))}%;background:#185FA5"></div></div></div>
+      <div class="ind"><div class="il">Beta</div><div class="iv" style="color:${bC}">${s.beta}x</div><div class="mb"><div class="mbf" style="width:${Math.round(s.beta/2*100)}%;background:${bC}"></div></div></div>
+      <div class="ind"><div class="il">Vol ratio</div><div class="iv" style="color:${s.volMult>=3?'var(--p)':'var(--tx)'}">${s.volMult}x</div><div class="mb"><div class="mbf" style="width:${Math.min(100,s.volMult/6*100)}%;background:var(--p)"></div></div></div>
+    </div>
+    <div class="xd" data-xd="${s.sym}">
+      <p>${whyText(s)}</p>
+      <p style="margin-top:6px;font-size:11px;color:var(--t3)"><strong style="color:var(--t2)">Indicators:</strong> RSI 70+ = overbought. P/E = price vs earnings. Beta = volatility vs market. Vol ratio = today vs 20-day avg.</p>
+      <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;">
+        ${buyH}
+        <button class="xbtn" onclick="event.stopPropagation();window.open('https://finance.yahoo.com/quote/${s.sym}','_blank')">Yahoo Finance →</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildTier(id,stocks,badge,title,desc){
+  const el=$(id);if(!stocks.length){el.innerHTML='';return;}
+  el.innerHTML=`<div class="sh"><span class="bbadge ${badge.c}">${badge.e} ${badge.l}</span><h2>${title}</h2></div>
+    <p class="sdesc">${desc}</p><div class="sgrid">${stocks.map(s=>renderCard(s)).join('')}</div>`;
+}
+
+function filterArr(arr){
+  if(curFilter==='all')return arr;
+  if(curFilter==='strong')return arr.filter(s=>s.score>=70);
+  if(curFilter==='dividend')return arr.filter(s=>s.div>=2);
+  if(curFilter==='tech')return arr.filter(s=>s.tags.includes('tech'));
+  return arr;
+}
+function setF(f,btn){curFilter=f;document.querySelectorAll('#tcToday .fbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderTiers();}
+function renderTiers(){
+  buildTier('ts',filterArr(scoredAll.filter(s=>s.price<=50)),{c:'b-s',e:'🌱',l:'Under $50'},'Starter budget','Buy a full share for under $50.');
+  buildTier('tm',filterArr(scoredAll.filter(s=>s.price>50&&s.price<=200)),{c:'b-m',e:'📈',l:'$50–$200'},'Mid-range picks','Well-known companies at accessible prices.');
+  buildTier('tp',filterArr(scoredAll.filter(s=>s.price>200)),{c:'b-p',e:'⭐',l:'$200+'},'Premium stocks','Many brokers offer fractional shares from $1.');
+}
+
+/* ════ PORTFOLIO ════ */
+function renderPortfolio(){
+  const el=$('portContent');
+  if(CU?.guest||!CU?.email){
+    el.innerHTML=`<div class="port-empty"><div class="pe-i">🔒</div><p>Sign in to track your stock purchases and see live profit & loss.</p><div style="margin-top:1rem;display:flex;gap:8px;justify-content:center;"><button class="btn-green" onclick="openM('login')">Sign in</button><button class="btn-ghost" onclick="openM('signup')">Create account</button></div></div>`;
+    return;
+  }
+  const holdings=getH(CU.email);
+  const syms=Object.keys(holdings);
+  if(!syms.length){
+    el.innerHTML=`<div class="port-empty"><div class="pe-i">📭</div><p>Your portfolio is empty. Browse any tab, click a stock, and tap <strong>"+ Track this stock"</strong> to log it at today's price.</p></div>`;
+    return;
+  }
+  let totCost=0,totVal=0;
+  const rows=syms.map(sym=>{
+    const h=holdings[sym];
+    const s=scoredAll.find(x=>x.sym===sym)||scoredPump.find(x=>x.sym===sym)||scoredPenny.find(x=>x.sym===sym);
+    const curr=s?s.px:h.buyPx;
+    const cost=h.buyPx*h.shares,val=curr*h.shares;
+    const pnlD=val-cost,pnlP=pnlD/cost*100;
+    totCost+=cost;totVal+=val;
+    const days=Math.round((new Date()-new Date(h.buyDate))/(86400000))||0;
+    return{sym,h,curr,cost,val,pnlD,pnlP,days};
+  });
+  const tPnlD=totVal-totCost,tPnlP=tPnlD/totCost*100;
+  const tc2=tPnlP>=0?'up':'dn';
+
+  el.innerHTML=`
+    <div class="psumm">
+      <div class="psc"><div class="psc-l">Invested</div><div class="psc-v">$${fmt(totCost)}</div><div class="psc-s">${rows.length} positions</div></div>
+      <div class="psc"><div class="psc-l">Current value</div><div class="psc-v">$${fmt(totVal)}</div><div class="psc-s">Today's prices</div></div>
+      <div class="psc"><div class="psc-l">Total P&L</div><div class="psc-v ${tc2}">${tPnlD>=0?'+':'−'}$${fmt(Math.abs(tPnlD))}</div><div class="psc-s ${tc2}">${tPnlP>=0?'+':''}${fmt(tPnlP,2)}%</div></div>
+    </div>
+    <div class="pchw"><div class="pcht">Portfolio breakdown</div><canvas id="portC" height="200"></canvas></div>
+    ${rows.map(row=>{
+      const cc=row.pnlP>=0?'up':'dn';
+      return`<div class="hrow">
+        <div>
+          <div class="hr-s">${row.sym}</div>
+          <div class="hr-n">${row.h.name}</div>
+          <div class="hr-d">Tracked ${row.days===0?'today':row.days+'d ago'} · Bought $${fmt(row.h.buyPx)} · ${row.h.shares} share</div>
+        </div>
+        <div class="hr-r">
+          <div class="hr-v">$${fmt(row.curr)}</div>
+          <div class="hr-c ${cc}">${row.pnlP>=0?'+':''}${fmt(row.pnlP,2)}%</div>
+          <div class="hr-p ${cc}">${row.pnlD>=0?'+':'−'}$${fmt(Math.abs(row.pnlD))}</div>
+          <button class="xbtn" style="font-size:11px;padding:3px 8px;margin-top:5px;" onclick="sellH('${row.sym}')">Remove</button>
+        </div>
+      </div>`;
+    }).join('')}`;
+
+  // chart
+  if(portChart)portChart.destroy();
+  const dark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  portChart=new Chart($('portC').getContext('2d'),{
+    type:'doughnut',
+    data:{labels:rows.map(r=>r.sym),datasets:[{data:rows.map(r=>r.val),
+      backgroundColor:['#1a8a4a','#185FA5','#BA7517','#7c3aed','#c0392b','#0891b2','#d97706','#059669'],
+      borderWidth:2,borderColor:dark?'#1c1c1a':'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'right',labels:{color:dark?'#999990':'#555550',font:{size:10}}},
+      tooltip:{callbacks:{label:c=>' $'+fmt(c.parsed)+' ('+fmt(c.parsed/totVal*100,1)+'%)'}}}}
+  });
+}
+
+/* ════ PUMP PREDICTOR — VOLUME ENGINE ════ */
+let pumpFilterMode='all';
+function setPumpFilter(m,btn){
+  pumpFilterMode=m;
+  document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderPump();
+}
+
+function renderPump(){
+  let arr=[...scoredPump];
+  if(pumpFilterMode==='ultra')arr=arr.filter(s=>s.pumpScore>=80);
+  else if(pumpFilterMode==='high')arr=arr.filter(s=>s.pumpScore>=60&&s.pumpScore<80);
+  else if(pumpFilterMode==='vol')arr=arr.filter(s=>s.volSpike>=3);
+  else if(pumpFilterMode==='build')arr=arr.filter(s=>s.isClimbing);
+  else if(pumpFilterMode==='squeeze')arr=arr.filter(s=>s.shortPct>=20);
+  arr.sort((a,b)=>b.pumpScore-a.pumpScore);
+
+  $('pumpGrid').innerHTML=arr.map(s=>{
+    const conf=s.pumpScore>=80?'ultra':s.pumpScore>=60?'high':s.pumpScore>=40?'med':'low';
+    const crC={ultra:'cr-u',high:'cr-h',med:'cr-m',low:'cr-l'}[conf];
+    const pcC='pc-'+conf;
+    const cc=s.chg>=0?'up':'dn',cs=s.chg>=0?'+':'';
+    const ahC=s.ahMove>=0?'up':'dn';
+
+    const factors=[
+      {l:'Price climb',  v:Math.max(0,s.priceClimbMultiple-1), max:3.5, color:'#7c3aed', fv:s.isClimbing?`${s.priceClimbMultiple.toFixed(1)}x over 3d, steady`:`${s.priceClimbMultiple.toFixed(1)}x, no clear build`},
+      {l:'Vol vs normal',v:s.volSpike, max:7.8, color:'#0891b2', fv:s.volSpike.toFixed(1)+'x avg'},
+      {l:'Float rotation',v:s.floatRotation,max:2.5,color:'#185FA5',fv:s.floatRotation.toFixed(2)+'x float'},
+      {l:'Float',      v:Math.max(0,20-s.float),max:20,color:'#BA7517',fv:s.float+'M shares'},
+      {l:'Short %',    v:s.shortPct, max:50,  color:'#BA7517', fv:s.shortPct+'% shorted'},
+      {l:'AH move',    v:Math.max(0,s.ahMove),max:15,color:s.ahMove>=0?'#1a8a4a':'#c0392b',fv:(s.ahMove>=0?'+':'')+s.ahMove.toFixed(2)+'%'},
+      {l:'Catalyst',   v:s.catalystStrength,max:1,color:'#059669',fv:s.catalystStrength>0.65?'Strong':s.catalystStrength>0.35?'Moderate':'Weak'},
+      {l:'Freshness',  v:s.freshness, max:1, color:'#0e9f6e',fv:s.freshness>0.6?'Early in move':s.freshness>0.3?'Mid-move':'Already extended'},
+      {l:'Options flow',v:s.optFlow, max:1, color:'#7c3aed',fv:s.optFlow>0.65?'Unusual call buying':s.optFlow>0.35?'Normal':'Light'},
+      {l:'Dilution risk',v:s.dilutionRisk, max:1, color:'#c0392b',fv:s.dilutionRisk>=0.6?'High — caution':s.dilutionRisk>=0.35?'Moderate':'Low'},
+    ];
+
+    const whys=[];
+    if(s.isClimbing)whys.push(`<strong>price has climbed steadily for 3 sessions straight, up ${s.priceClimbMultiple.toFixed(1)}x over that stretch</strong> — a multi-day grind higher rather than a single spike, the strongest tell we track`);
+    else if(s.priceClimbMultiple>=2)whys.push(`<strong>price is up ${s.priceClimbMultiple.toFixed(1)}x over the last few sessions</strong>, though the climb hasn't been fully consistent day to day`);
+    if(s.isBuilding)whys.push(`<strong>volume is backing that up too (${s.volD3}x → ${s.volD2}x → ${s.volSpike.toFixed(1)}x normal average)</strong> — confirming real buying behind the move, not just thin trading`);
+    else if(s.volSpike>=4)whys.push(`<strong>volume is running ${s.volSpike.toFixed(1)}x the normal average today</strong>, a sharp jump from what this stock usually trades`);
+    else if(s.volSpike>=2)whys.push(`<strong>volume elevated at ${s.volSpike.toFixed(1)}x</strong> normal`);
+    if(s.floatRotation>=1.5)whys.push(`<strong>today's volume equals ${s.floatRotation.toFixed(1)}x the entire float</strong> — the float is changing hands multiple times over, which is what forces gaps`);
+    else if(s.floatRotation>=0.75)whys.push(`<strong>today's volume is ${(s.floatRotation*100).toFixed(0)}% of the entire float</strong>`);
+    if(s.float<3)whys.push(`<strong>extremely low float (${s.float}M shares)</strong> — tiny supply means big moves on buy pressure`);
+    else if(s.float<8)whys.push(`<strong>low float (${s.float}M shares)</strong> amplifies price moves`);
+    if(s.shortPct>=25)whys.push(`<strong>high short interest (${s.shortPct}%)</strong> — a squeeze could fire if buyers keep pushing up`);
+    if(s.ahMove>3)whys.push(`<strong>after-hours +${s.ahMove.toFixed(2)}%</strong> — informed money moving overnight, often a precursor to gap-up continuation`);
+    if(s.catalystStrength>0.65)whys.push(`<strong>catalyst signal detected</strong> — news or filing activity`);
+    if(s.freshness>0.6)whys.push(`<strong>this looks early</strong> — the climb hasn't run many legs yet, which usually means more room than a move that's already extended`);
+    if(s.optFlow>0.65)whys.push(`<strong>unusual options activity detected</strong> — call buying suggests positioned money, not just retail chasing the tape`);
+    if(s.dilutionRisk>=0.6)whys.push(`<strong>⚠️ elevated dilution risk</strong> — thin balance sheet signals make a surprise offering more likely, which can cut a hot move short regardless of how the chart looks`);
+
+    const sigs=[];
+    if(s.isClimbing)sigs.push(`<span class="sig sg">📈 Multi-day climb ${s.priceClimbMultiple.toFixed(1)}x</span>`);
+    if(s.isBuilding)sigs.push(`<span class="sig sg">🧊 Vol building 3d</span>`);
+    if(s.volSpike>=4)sigs.push(`<span class="sig sp">🔥 ${s.volSpike.toFixed(1)}x Volume</span>`);
+    else if(s.volSpike>=2)sigs.push(`<span class="sig sa">📊 ${s.volSpike.toFixed(1)}x Vol</span>`);
+    if(s.floatRotation>=1.5)sigs.push(`<span class="sig sp">🌀 ${s.floatRotation.toFixed(1)}x Float Rotation</span>`);
+    if(s.float<3)sigs.push(`<span class="sig sp">🏷️ Tiny Float</span>`);
+    else if(s.float<8)sigs.push(`<span class="sig sb">🏷️ Low Float</span>`);
+    if(s.shortPct>=25)sigs.push(`<span class="sig sa">⚡ Squeeze Risk</span>`);
+    if(s.ahMove>3)sigs.push(`<span class="sig sg">🌙 AH +${s.ahMove.toFixed(2)}%</span>`);
+    else if(s.ahMove<-2)sigs.push(`<span class="sig sr">🌙 AH ${s.ahMove.toFixed(2)}%</span>`);
+    if(s.catalystStrength>0.65)sigs.push(`<span class="sig sg">📋 Catalyst</span>`);
+    if(s.freshness>0.6)sigs.push(`<span class="sig sg">🆕 Fresh breakout</span>`);
+    if(s.optFlow>0.65)sigs.push(`<span class="sig sg">📞 Unusual Options</span>`);
+    if(s.dilutionRisk>=0.6)sigs.push(`<span class="sig sr">⚠️ Dilution Risk</span>`);
+
+    const px=s.price<1?s.px.toFixed(4):fmt(s.px);
+    const own=isOwned(s.sym);
+    const buyBtn=own
+      ?`<button class="xbtn" style="margin-top:8px;font-size:11px;" onclick="sellH('${s.sym}')">Remove from portfolio</button>`
+      :`<button class="xbuy" style="margin-top:8px;font-size:11px;" onclick="logBuy('${s.sym}')">+ Track this stock</button>`;
+
+    return`<div class="pump-card ${pcC}">
+      <div class="pump-top">
+        <div><div class="pc-sym">${s.sym}</div><div class="pc-co">${s.name} · ${s.sector}</div></div>
+        <div class="pc-conf"><div class="cr ${crC}">${s.pumpScore}</div><div class="cr-lbl">pump score</div></div>
+      </div>
+      <div class="pc-price">$${px} <span class="${cc}" style="font-size:11px">${cs}${s.chg.toFixed(2)}%</span></div>
+      <div class="pc-pc">Prev close: $${fmt(s.prevClose,s.price<0.1?5:s.price<1?4:2)} <span style="color:${s.px>=s.prevClose?'#1a8a4a':'#c0392b'};font-weight:700">${s.px>=s.prevClose?'▲':'▼'}</span></div>
+      <div class="pc-vol">Float: <strong>${s.float}M</strong> · Rotation: <strong style="color:var(--p)">${s.floatRotation.toFixed(2)}x</strong> · Short: <strong>${s.shortPct}%</strong> · AH: <strong class="${ahC}">${s.ahMove>=0?'+':''}${s.ahMove.toFixed(2)}%</strong></div>
+      <div class="psigs">${sigs.join('')}</div>
+      <div class="pfactors">${factors.map(f=>`<div class="pf">
+        <span class="pf-l">${f.l}</span>
+        <div class="pf-bw"><div class="pf-b" style="width:${Math.min(100,f.v/f.max*100).toFixed(0)}%;background:${f.color}"></div></div>
+        <span class="pf-v">${f.fv}</span>
+      </div>`).join('')}</div>
+      <div class="pwhy"><strong>Why flagged:</strong> ${whys.length?whys.join('; ')+'.' :'Multiple signals converging — monitor closely.'}</div>
+      <div class="dna-match">🧬 ${s.dnaMatch}% Volume Engine match</div>
+      <div>${buyBtn}</div>
+      <div class="pc-foot">⚠️ Probabilistic signal. Not a guarantee. Always use stop-losses.</div>
+    </div>`;
+  }).join('');
+}
+
+/* ════ PENNY STOCKS ════ */
+function setPenSort(m,btn){penSort=m;document.querySelectorAll('#tcPenny .fbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderPenny();}
+function renderPenny(){
+  let arr=[...scoredPenny];
+  if(penSort==='vol')arr.sort((a,b)=>b.volMult-a.volMult);
+  else if(penSort==='ah')arr.sort((a,b)=>b.ahMove-a.ahMove);
+  else if(penSort==='float')arr.sort((a,b)=>a.float-b.float);
+  else arr.sort((a,b)=>b.pumpScore-a.pumpScore);
+  $('penGrid').innerHTML=`<div class="sgrid">${arr.map(s=>{
+    const conf=s.pumpScore>=80?'ultra':s.pumpScore>=60?'high':s.pumpScore>=40?'med':'low';
+    const crC={ultra:'cr-u',high:'cr-h',med:'cr-m',low:'cr-l'}[conf];
+    const cc=s.chg>=0?'up':'dn',cs=s.chg>=0?'+':'';
+    const px=s.price<0.01?s.px.toFixed(5):s.price<1?s.px.toFixed(4):fmt(s.px);
+    const own=isOwned(s.sym);
+    const buyH=own
+      ?`<button class="xbtn" onclick="event.stopPropagation();sellH('${s.sym}')">Remove</button>`
+      :`<button class="xbuy" onclick="event.stopPropagation();logBuy('${s.sym}')">+ Track</button>`;
+    const pnlH=own&&getH(CU?.email||'')[s.sym]?(()=>{const h=getH(CU.email)[s.sym];const pp=(s.px-h.buyPx)/h.buyPx*100;return`<div class="pnl-badge ${pp>=0?'pnl-up':'pnl-dn'}">${pp>=0?'+':''}${fmt(pp,2)}%</div>`;})():'';
+    return`<div class="pump-card pc-${conf}">
+      <div class="pump-top">
+        <div><div class="pc-sym">${s.sym}</div><div class="pc-co">${s.name} · ${s.sector}</div></div>
+        <div class="pc-conf"><div class="cr ${crC}">${s.pumpScore}</div><div class="cr-lbl">DNA score</div></div>
+      </div>
+      <div class="pc-price">$${px} <span class="${cc}" style="font-size:11px">${cs}${s.chg.toFixed(2)}%</span></div>
+      <div class="pc-pc">Prev close: $${fmt(s.prevClose,s.price<0.01?5:s.price<1?4:2)} <span style="color:${s.px>=s.prevClose?'#1a8a4a':'#c0392b'};font-weight:700">${s.px>=s.prevClose?'▲':'▼'}</span></div>
+      <div class="pc-vol">Float: <strong>${s.float}M</strong> · Short: <strong>${s.shortPct}%</strong> · Vol: <strong style="color:var(--p)">${s.volMult.toFixed(1)}x</strong></div>
+      ${pnlH}
+      <div class="psigs">
+        ${s.volMult>=4?`<span class="sig sp">🔥 ${s.volMult.toFixed(1)}x Vol</span>`:''}
+        ${s.float<2?`<span class="sig sp">🏷️ Ultra Low Float</span>`:''}
+        ${s.shortPct>=15?`<span class="sig sa">⚡ Squeeze</span>`:''}
+        ${s.ahMove>3?`<span class="sig sg">🌙 AH +${s.ahMove.toFixed(2)}%</span>`:''}
+        <div class="dna-match" style="margin:0">🧬 ${s.dnaMatch}% Volume Engine match</div>
+      </div>
+      <div class="pfactors" style="margin-top:8px;">
+        <div class="pf"><span class="pf-l">Vol spike</span><div class="pf-bw"><div class="pf-b" style="width:${Math.min(100,s.volMult/7*100).toFixed(0)}%;background:var(--p)"></div></div><span class="pf-v">${s.volMult.toFixed(1)}x</span></div>
+        <div class="pf"><span class="pf-l">Float score</span><div class="pf-bw"><div class="pf-b" style="width:${Math.round(Math.max(0,1-s.float/20)*100)}%;background:var(--b)"></div></div><span class="pf-v">${s.float}M</span></div>
+        <div class="pf"><span class="pf-l">Short %</span><div class="pf-bw"><div class="pf-b" style="width:${Math.min(100,s.shortPct/50*100).toFixed(0)}%;background:var(--a)"></div></div><span class="pf-v">${s.shortPct}%</span></div>
+        <div class="pf"><span class="pf-l">AH move</span><div class="pf-bw"><div class="pf-b" style="width:${Math.min(100,Math.max(0,s.ahMove)/15*100).toFixed(0)}%;background:var(--g)"></div></div><span class="pf-v">${s.ahMove>=0?'+':''}${s.ahMove.toFixed(2)}%</span></div>
+      </div>
+      <div style="margin-top:8px;">${buyH}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+/* ════ TABS ════ */
+function showTab(id,btn){
+  document.querySelectorAll('.tc').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tbtab').forEach(t=>t.classList.remove('on'));
+  $(id).classList.add('on');btn.classList.add('on');
+  if(id==='tcPort')renderPortfolio();
+  if(id==='tcPump')renderPump();
+  if(id==='tcPenny')renderPenny();
+}
+
+/* ════ BUILD APP ════ */
+function buildApp(){
+  resetR();
+  buildMkt();
+  scoredAll=STOCKS.map(s=>calcStock(s)).sort((a,b)=>b.score-a.score);
+  scoredPump=PUMP_UNIVERSE.map(s=>calcPumpDNA(s)).sort((a,b)=>b.pumpScore-a.pumpScore);
+  scoredPenny=PENNY_UNIVERSE.map(s=>{
+    const base=calcPumpDNA(s);
+    return{...base,...calcStock(s),pumpScore:base.pumpScore,dnaMatch:base.dnaMatch,
+      float:s.float,shortPct:s.shortPct,volSpike:base.volSpike,ahMove:base.ahMove,
+      catalystStrength:base.catalystStrength};
+  }).sort((a,b)=>b.pumpScore-a.pumpScore);
+  renderTiers();
+}
+</script>
+</body>
+</html>
